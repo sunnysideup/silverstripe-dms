@@ -1,18 +1,24 @@
 {
     "name": "sunnysideup/dms",
     "description": "Adds a Document Management System to SilverStripe ",
-    "type": "silverstripe-module",
-    "keywords": ["silverstripe", "dms", "document", "document management system"],
+    "type": "silverstripe-vendormodule",
+    "keywords": [
+        "silverstripe",
+        "dms",
+        "document",
+        "document management system"
+    ],
     "license": "BSD-3-Clause",
-    "authors": [{
-        "name": "Julian Seidenberg",
-        "email": "julian@silverstripe.com"
-    }],
+    "authors": [
+        {
+            "name": "Julian Seidenberg",
+            "email": "julian@silverstripe.com"
+        }
+    ],
     "require": {
-        "silverstripe/framework": "^3.5",
-        "silverstripe/cms": "^3.5",
         "symbiote/silverstripe-gridfieldextensions": "^2.0",
-        "silverstripe/taxonomy": "^1.2"
+        "silverstripe/taxonomy": "^1.2",
+        "silverstripe/recipe-cms": "^4.3"
     },
     "suggest": {
         "undefinedoffset/sortablegridfield": "Allow documents to be reordered via drag-and-drop"
@@ -20,6 +26,15 @@
     "extra": {
         "branch-alias": {
             "dev-master": "2.4.x-dev"
+        },
+        "expose": [
+            "client/javascript",
+            "client/images"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "Sunnysideup\\DMS\\": "src/"
         }
     }
 }
