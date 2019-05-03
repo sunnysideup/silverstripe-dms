@@ -8,6 +8,7 @@ use CMSForm;
 use Sunnysideup\DMS\Model\DMSDocument;
 use Sunnysideup\DMS\Model\DMSDocumentSet;
 use SilverStripe\View\Requirements;
+use SilverStripe\Forms\Form;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
@@ -28,7 +29,7 @@ class DMSDocumentAdmin extends ModelAdmin
 
     private static $menu_title = 'Documents';
 
-    private static $menu_icon = 'dms/images/app_icons/drawer.png';
+    private static $menu_icon = 'resources/vendor/sunnysideup/dms/client/images/app_icons/drawer.png';
 
     public function init()
     {
@@ -53,11 +54,11 @@ class DMSDocumentAdmin extends ModelAdmin
      * update the display fields to include some extra columns that are only for this ModelAdmin, so cannot
      * be added directly to the model's display fields.
      *
-     * @param  CMSForm   $form
+     * @param  Form   $form
      * @param  GridField $gridField
-     * @return CMSForm
+     * @return Form
      */
-    protected function modifyGridField(CMSForm $form, GridField $gridField)
+    protected function modifyGridField(Form $form, GridField $gridField)
     {
         $gridFieldConfig = $gridField->getConfig();
 

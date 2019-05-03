@@ -59,7 +59,7 @@ class DMSGridFieldAddNewButton extends GridFieldAddNewButton implements GridFiel
         ));
 
         return array(
-            $this->targetFragment => $data->renderWith(DMSGridFieldAddNewButton::class),
+            $this->targetFragment => $data->renderWith('Sunnysideup\\DMS\\Includes\\DMSGridFieldAddNewButton')
         );
     }
 

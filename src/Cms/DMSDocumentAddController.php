@@ -22,7 +22,7 @@ use SilverStripe\Assets\File;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Admin\LeftAndMain;
-
+use SilverStripe\Core\Manifest\ModuleLoader;
 /**
  * @package dms
  */
@@ -99,22 +99,22 @@ class DMSDocumentAddController extends LeftAndMain
   * ### @@@@ START REPLACEMENT @@@@ ###
   * WHY: upgrade to SS4
   * OLD: FRAMEWORK_DIR (ignore case)
-  * NEW: SilverStripe\Core\Manifest\ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() (COMPLEX)
+  * NEW: ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() (COMPLEX)
   * EXP: Please review update and fix as required
   * ### @@@@ STOP REPLACEMENT @@@@ ###
   */
-        Requirements::javascript(SilverStripe\Core\Manifest\ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() . '/javascript/AssetUploadField.js');
+        Requirements::javascript(ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() . '/javascript/AssetUploadField.js');
 
         /**
           * ### @@@@ START REPLACEMENT @@@@ ###
           * WHY: upgrade to SS4
           * OLD: FRAMEWORK_DIR (ignore case)
-          * NEW: SilverStripe\Core\Manifest\ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() (COMPLEX)
+          * NEW: ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() (COMPLEX)
           * EXP: Please review update and fix as required
           * ### @@@@ STOP REPLACEMENT @@@@ ###
           */
-        Requirements::css(SilverStripe\Core\Manifest\ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() . '/css/AssetUploadField.css');
-        Requirements::css(DMS_DIR . '/dist/css/cmsbundle.css');
+        Requirements::css(ModuleLoader::getModule('silverstripe/framework')->getResource('UPGRADE-FIX-REQUIRED.php')->getRelativePath() . '/css/AssetUploadField.css');
+        Requirements::css(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/css/cmsbundle.css'));
 
         /** @var SiteTree $page */
         $page = $this->currentPage();

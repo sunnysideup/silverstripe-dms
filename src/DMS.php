@@ -26,7 +26,7 @@ class DMS extends ViewableData implements DMSInterface
      * @config
      * @var string
      */
-    private static $folder_name = 'assets/_dmsassets';
+    private static $folder_name = '_dmsassets';
 
     /**
      * How many documents to store in a single folder. The square of this number is the maximum number of documents.
@@ -72,13 +72,13 @@ class DMS extends ViewableData implements DMSInterface
             if (!file_exists($dmsPath . DIRECTORY_SEPARATOR . '.htaccess')) {
                 // Restrict access to the storage folder
                 copy(
-                    Director::baseFolder() . DIRECTORY_SEPARATOR . DMS_DIR . DIRECTORY_SEPARATOR
+                    DMS_DIR . DIRECTORY_SEPARATOR
                     . 'resources' . DIRECTORY_SEPARATOR . '.htaccess',
                     $dmsPath . DIRECTORY_SEPARATOR . '.htaccess'
                 );
 
                 copy(
-                    Director::baseFolder() . DIRECTORY_SEPARATOR . DMS_DIR . DIRECTORY_SEPARATOR
+                    DMS_DIR . DIRECTORY_SEPARATOR
                     . 'resources' . DIRECTORY_SEPARATOR . 'web.config',
                     $dmsPath . DIRECTORY_SEPARATOR . 'web.config'
                 );
@@ -94,7 +94,7 @@ class DMS extends ViewableData implements DMSInterface
      */
     public function getStoragePath()
     {
-        return Director::baseFolder() . DIRECTORY_SEPARATOR . $this->config()->get('folder_name');
+        return ASSETS_PATH . DIRECTORY_SEPARATOR . $this->config()->get('folder_name');
     }
 
     /**

@@ -55,6 +55,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Security\Permission;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Core\Manifest\ModuleLoader;
 
 /**
  * A document set is attached to Pages, and contains many DMSDocuments
@@ -277,11 +278,11 @@ class DMSDocumentSet extends DataObject
     {
         // Javascript to customize the grid field for the DMS document (overriding entwine
         // in FRAMEWORK_DIR.'/javascript/GridField.js'
-        Requirements::javascript(DMS_DIR . '/javascript/DMSGridField.js');
-        Requirements::css(DMS_DIR . '/dist/css/dmsbundle.css');
+        Requirements::javascript(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/javascript/DMSGridField.js'));
+        Requirements::css(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/css/dmsbundle.css'));
 
         // Javascript for the link editor pop-up in TinyMCE
-        Requirements::javascript(DMS_DIR . '/javascript/DocumentHTMLEditorFieldToolbar.js');
+        Requirements::javascript(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/javascript/DocumentHTMLEditorFieldToolbar.js'));
 
         return $this;
     }

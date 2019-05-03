@@ -5,34 +5,6 @@ namespace Sunnysideup\DMS\Model;
 use Exception;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 use Sunnysideup\DMS\Model\DMSDocumentSet;
 use SilverStripe\Assets\Image;
 use SilverStripe\Security\Member;
@@ -85,6 +57,7 @@ use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Core\Convert;
 use SilverStripe\ORM\DataObject;
 use Sunnysideup\DMS\Interfaces\DMSDocumentInterface;
+use SilverStripe\Core\Manifest\ModuleLoader;
 
 /**
  * @package dms
@@ -851,8 +824,8 @@ class DMSDocument extends DataObject implements DMSDocumentInterface
     public function getCMSFields()
     {
         //include JS to handling showing and hiding of bottom "action" tabs
-        Requirements::javascript(DMS_DIR . '/javascript/DMSDocumentCMSFields.js');
-        Requirements::css(DMS_DIR . '/dist/css/cmsbundle.css');
+        Requirements::javascript(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client//javascript/DMSDocumentCMSFields.js'));
+        Requirements::css(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/css/cmsbundle.css'));
 
         $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
 
@@ -1165,7 +1138,7 @@ class DMSDocument extends DataObject implements DMSDocumentInterface
             $ext = "generic";
         }
 
-        return DMS_DIR."/images/app_icons/{$ext}_32.png";
+        return DMS_DIR."/client/images/app_icons/{$ext}_32.png";
     }
 
     /**

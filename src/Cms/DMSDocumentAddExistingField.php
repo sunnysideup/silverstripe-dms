@@ -8,6 +8,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\View\Requirements;
 use Sunnysideup\DMS\Cms\DMSDocumentAddExistingField;
 use SilverStripe\Forms\CompositeField;
+use SilverStripe\Core\Manifest\ModuleLoader;
 
 class DMSDocumentAddExistingField extends CompositeField
 {
@@ -65,7 +66,7 @@ class DMSDocumentAddExistingField extends CompositeField
     {
         Requirements::javascript(DMS_DIR . '/javascript/DMSDocumentAddExistingField.js');
         Requirements::javascript(DMS_DIR . '/javascript/DocumentHTMLEditorFieldToolbar.js');
-        Requirements::css(DMS_DIR . '/dist/css/cmsbundle.css');
+        Requirements::css(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/css/cmsbundle.css'));
 
         return $this->renderWith(DMSDocumentAddExistingField::class);
     }
