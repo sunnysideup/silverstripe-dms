@@ -17,7 +17,7 @@
     ],
     "require": {
         "symbiote/silverstripe-gridfieldextensions": "^2.0",
-        "silverstripe/taxonomy": "^1.2",
+        "silverstripe/taxonomy": "^2.0",
         "silverstripe/recipe-cms": "^4.3"
     },
     "suggest": {
