@@ -5,7 +5,3 @@ SilverStripe\CMS\Model\SiteTree:
   extensions:
     - Sunnysideup\DMS\Extensions\DMSSiteTreeExtension
   documents_enabled: true
-HtmlEditorField_Toolbar:
-  extensions:
-    - DocumentHtmlEditorFieldToolbar
-SilverStripe\Core\Injector\Injector: {  }

@@ -133,8 +133,6 @@ class DMSDocument_Controller extends Controller
                     }
 
                     //if a DMSDocument can be downloaded and all the permissions/privileges has passed,
-                    //its ViewCount should be increased by 1 just before the browser sending the file to front.
-                    $doc->trackView();
 
                     return $this->sendFile($path, $mime, $doc->getFilenameWithoutID(), $disposition);
                 }
