@@ -85,10 +85,9 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
 {
 
 
-    private static $table_name = 'DMSDocument';
-
     private static $db = array(
-        "Description" => 'Text'
+        "Description" => 'Text',
+        'IsDMSDocument' => true
     );
 
     private static $belongs_many_many = array(
