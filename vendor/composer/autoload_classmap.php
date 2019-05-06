@@ -6,9 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Sunnysideup\\DMS\\DMS' => $baseDir . '/src/DMS.php',
-    'Sunnysideup\\DMS\\DMSShortcodeHandler' => $baseDir . '/src/DMSShortcodeHandler.php',
-    'Sunnysideup\\DMS\\Exceptions\\FileNotFoundException' => $baseDir . '/src/Exceptions/FileNotFoundException.php',
     'Sunnysideup\\DMS\\Extensions\\DMSDocumentTaxonomyExtension' => $baseDir . '/src/Extensions/DMSDocumentTaxonomyExtension.php',
     'Sunnysideup\\DMS\\Extensions\\DMSSiteTreeExtension' => $baseDir . '/src/Extensions/DMSSiteTreeExtension.php',
     'Sunnysideup\\DMS\\Extensions\\DMSTaxonomyTypeExtension' => $baseDir . '/src/Extensions/DMSTaxonomyTypeExtension.php',
@@ -18,7 +15,5 @@ return array(
     'Sunnysideup\\DMS\\Model\\DMSDocument' => $baseDir . '/src/Model/DMSDocument.php',
     'Sunnysideup\\DMS\\Model\\DMSDocumentSet' => $baseDir . '/src/Model/DMSDocumentSet.php',
     'Sunnysideup\\DMS\\Model\\DMSDocument_Controller' => $baseDir . '/src/Model/DMSDocument_Controller.php',
-    'Sunnysideup\\DMS\\Model\\DMSDocument_versions' => $baseDir . '/src/Model/DMSDocument_versions.php',
     'Sunnysideup\\DMS\\Tasks\\MigrateToDocumentSetsTask' => $baseDir . '/src/Tasks/MigrateToDocumentSetsTask.php',
-    'Sunnysideup\\DMS\\Tools\\ShortCodeRelationFinder' => $baseDir . '/src/Tools/ShortCodeRelationFinder.php',
 );

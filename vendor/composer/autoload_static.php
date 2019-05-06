@@ -21,9 +21,6 @@ class ComposerStaticInit9383538275f8489f41a9ca849e519243
     );
 
     public static $classMap = array (
-        'Sunnysideup\\DMS\\DMS' => __DIR__ . '/../..' . '/src/DMS.php',
-        'Sunnysideup\\DMS\\DMSShortcodeHandler' => __DIR__ . '/../..' . '/src/DMSShortcodeHandler.php',
-        'Sunnysideup\\DMS\\Exceptions\\FileNotFoundException' => __DIR__ . '/../..' . '/src/Exceptions/FileNotFoundException.php',
         'Sunnysideup\\DMS\\Extensions\\DMSDocumentTaxonomyExtension' => __DIR__ . '/../..' . '/src/Extensions/DMSDocumentTaxonomyExtension.php',
         'Sunnysideup\\DMS\\Extensions\\DMSSiteTreeExtension' => __DIR__ . '/../..' . '/src/Extensions/DMSSiteTreeExtension.php',
         'Sunnysideup\\DMS\\Extensions\\DMSTaxonomyTypeExtension' => __DIR__ . '/../..' . '/src/Extensions/DMSTaxonomyTypeExtension.php',
@@ -33,9 +30,7 @@ class ComposerStaticInit9383538275f8489f41a9ca849e519243
         'Sunnysideup\\DMS\\Model\\DMSDocument' => __DIR__ . '/../..' . '/src/Model/DMSDocument.php',
         'Sunnysideup\\DMS\\Model\\DMSDocumentSet' => __DIR__ . '/../..' . '/src/Model/DMSDocumentSet.php',
         'Sunnysideup\\DMS\\Model\\DMSDocument_Controller' => __DIR__ . '/../..' . '/src/Model/DMSDocument_Controller.php',
-        'Sunnysideup\\DMS\\Model\\DMSDocument_versions' => __DIR__ . '/../..' . '/src/Model/DMSDocument_versions.php',
         'Sunnysideup\\DMS\\Tasks\\MigrateToDocumentSetsTask' => __DIR__ . '/../..' . '/src/Tasks/MigrateToDocumentSetsTask.php',
-        'Sunnysideup\\DMS\\Tools\\ShortCodeRelationFinder' => __DIR__ . '/../..' . '/src/Tools/ShortCodeRelationFinder.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
