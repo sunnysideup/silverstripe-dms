@@ -10,14 +10,7 @@ use SilverStripe\Core\Config\Config;
 use Sunnysideup\DMS\Extensions\DMSTaxonomyTypeExtension;
 use SilverStripe\ORM\DataExtension;
 
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: upgrade to SS4
-  * OLD:  extends DataExtension (ignore case)
-  * NEW:  extends DataExtension (COMPLEX)
-  * EXP: Check for use of $this->anyVar and replace with $this->anyVar[$this->owner->ID] or consider turning the class into a trait
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
+
 class DMSDocumentTaxonomyExtension extends DataExtension
 {
     private static $many_many = array(
