@@ -90,7 +90,7 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
 
     private static $db = array(
         "Description" => 'Text',
-        'IsDMSDocument' => true
+        'IsDMSDocument' => 'Boolean'
     );
 
     private static $belongs_many_many = array(
@@ -113,7 +113,7 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
     );
 
     private static $many_many = array(
-        'RelatedDocuments' => DMSDocument::class
+        'RelatedDocuments' => File::class
     );
 
     private static $singular_name = 'Document';

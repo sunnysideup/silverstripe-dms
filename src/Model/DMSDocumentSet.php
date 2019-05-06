@@ -4,6 +4,7 @@ namespace Sunnysideup\DMS\Model;
 
 use UndefinedOffset\SortableGridField\Forms\GridFieldSortableRows;
 use Symbiote\GridFieldExtension\GridFieldOrderableRows;
+use SilverStripe\Assets\File;
 use SilverStripe\CMS\Model\SiteTree;
 use Sunnysideup\DMS\Model\DMSDocument;
 use SilverStripe\Forms\FieldList;
@@ -80,10 +81,9 @@ class DMSDocumentSet extends DataObject
         'Page' => SiteTree::class,
     );
 
-    //commented out for now to allow dev build to run
-    // private static $many_many = array(
-    //     'Documents' => DMSDocument::class,
-    // );
+    private static $many_many = array(
+        'Documents' => File::class,
+    );
 
     private static $many_many_extraFields = array(
         'Documents' => array(
