@@ -14,7 +14,6 @@ use SilverStripe\Security\Group;
 use SilverStripe\Security\Permission;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\DataExtension;
-use SilverStripe\ORM\ValidationResult ;
 use SilverStripe\View\Parsers\URLSegmentFilter;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Controller;
@@ -84,7 +83,7 @@ use SilverStripe\Core\Manifest\ModuleLoader;
  * @property Int LastEditedByID
  *
  */
-class DMSDocument extends DataExtension implements DMSDocumentInterface
+class DMSDocument extends File implements DMSDocumentInterface
 {
 
 
@@ -98,14 +97,8 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
     );
 
 
-    /**
-      * ### @@@@ START REPLACEMENT @@@@ ###
-      * WHY: upgrade to SS4
-      * OLD: private static $has_one = (case sensitive)
-      * NEW: private static $has_one = (COMPLEX)
-      * EXP: Make sure to add a private static $table_name!
-      * ### @@@@ STOP REPLACEMENT @@@@ ###
-      */
+    private static $table_name = 'DMSDocument';
+
     private static $has_one = array(
         'CoverImage' => Image::class,
         'CreatedBy' => Member::class,
@@ -113,7 +106,7 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
     );
 
     private static $many_many = array(
-        'RelatedDocuments' => File::class
+        'RelatedDocuments' => DMSDocument::class
     );
 
     private static $singular_name = 'Document';
@@ -765,7 +758,7 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
      *
      * @return ValidationResult
      */
-    public function validate(ValidationResult $validationResult)
+    public function validate()
     {
         $valid = parent::validate();
 

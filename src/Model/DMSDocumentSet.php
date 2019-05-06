@@ -82,7 +82,7 @@ class DMSDocumentSet extends DataObject
     );
 
     private static $many_many = array(
-        'Documents' => File::class,
+        'Documents' => DMSDocument::class,
     );
 
     private static $many_many_extraFields = array(
