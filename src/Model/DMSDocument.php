@@ -88,8 +88,7 @@ class DMSDocument extends File implements DMSDocumentInterface
 
 
     private static $db = array(
-        "Description" => 'Text',
-        'IsDMSDocument' => 'Boolean'
+        "Description" => 'Text'
     );
 
     private static $belongs_many_many = array(
