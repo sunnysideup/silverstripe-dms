@@ -13,11 +13,9 @@ use SilverStripe\Assets\Filesystem;
 
 $config = Config::inst();
 
-define('DMS_DIR', basename(__DIR__));
 
-if (!file_exists(Director::baseFolder() . DIRECTORY_SEPARATOR . DMS_DIR)) {
-    user_error('DMS directory named incorrectly. Please install the DMS module into a folder named: ' . DMS_DIR);
-}
+define('DMS_DIR', dirname( __FILE__ ) );
+
 
 // Ensure compatibility with PHP 7.2 ("object" is a reserved word),
 // with SilverStripe 3.6 (using Object) and SilverStripe 3.7 (using SS_Object)
@@ -25,10 +23,10 @@ if (!file_exists(Director::baseFolder() . DIRECTORY_SEPARATOR . DMS_DIR)) {
 
 CMSMenu::remove_menu_item(DMSDocumentAddController::class);
 
-ShortcodeParser::get('default')->register(
-    $config->get(DMS::class, 'shortcode_handler_key'),
-    array(DMSShortcodeHandler::class, 'handle')
-);
+// ShortcodeParser::get('default')->register(
+//     $config->get(DMS::class, 'shortcode_handler_key'),
+//     array(DMSShortcodeHandler::class, 'handle')
+// );
 
 if ($config->get(DMSDocument_versions::class, 'enable_versions')) {
     //using the same db relations for the versioned documents, as for the actual documents

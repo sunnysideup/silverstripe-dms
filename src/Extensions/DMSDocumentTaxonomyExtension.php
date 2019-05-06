@@ -2,7 +2,7 @@
 
 namespace Sunnysideup\DMS\Extensions;
 
-use TaxonomyTerm;
+use SilverStripe\Taxonomy\TaxonomyTerm;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ListboxField;
@@ -14,7 +14,7 @@ use SilverStripe\ORM\DataExtension;
 class DMSDocumentTaxonomyExtension extends DataExtension
 {
     private static $many_many = array(
-        'Tags' => 'TaxonomyTerm'
+        'Tags' => TaxonomyTerm::class
     );
 
     /**

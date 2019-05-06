@@ -13,6 +13,8 @@ use Sunnysideup\DMS\Model\DMSDocument;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Permission;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\ValidationResult ;
 use SilverStripe\View\Parsers\URLSegmentFilter;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Controller;
@@ -58,6 +60,7 @@ use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Core\Convert;
 use SilverStripe\ORM\DataObject;
 use Sunnysideup\DMS\Interfaces\DMSDocumentInterface;
+use SilverStripe\Core\Manifest\ModuleLoader;
 
 /**
  * @package dms
@@ -515,6 +518,14 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
     }
 
     /**
+     * Returns a link to download this DMSDocument from the DMS store
+     * @return String
+     */
+    public function getLink() {
+        return $this->owner->Link();
+    }
+
+    /**
      * Return the extension of the file associated with the document
      *
      * @return string
@@ -754,7 +765,7 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
      *
      * @return ValidationResult
      */
-    public function validate()
+    public function validate(ValidationResult $validationResult)
     {
         $valid = parent::validate();
 
@@ -852,5 +863,15 @@ class DMSDocument extends DataExtension implements DMSDocumentInterface
             unset($this->actionTasks[$panelKey]);
         }
         return $this;
+    }
+
+    /**
+     * Takes a File object or a String (path to a file) and copies it into the DMS, replacing the original document file
+     * but keeping the rest of the document unchanged.
+     * @param $file File object, or String that is path to a file to store
+     * @return DMSDocumentInstance Document object that we replaced the file in
+     */
+    public function replaceDocument($file) {
+        return $file;
     }
 }
