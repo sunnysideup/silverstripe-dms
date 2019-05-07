@@ -14,18 +14,18 @@ class DMSDocumentTest extends SapphireTest
 {
     protected static $fixture_file = 'dmstest.yml';
 
-    public function testDefaultDownloadBehabiourCMSFields()
-    {
-        $document = singleton(DMSDocument::class);
-        Config::modify()->update(DMSDocument::class, 'default_download_behaviour', 'open');
-        $cmsFields = $document->getCMSFields();
-        $this->assertEquals('open', $cmsFields->dataFieldByName('DownloadBehavior')->Value());
-
-
-        Config::modify()->update(DMSDocument::class, 'default_download_behaviour', 'download');
-        $cmsFields = $document->getCMSFields();
-        $this->assertEquals('download', $cmsFields->dataFieldByName('DownloadBehavior')->Value());
-    }
+    // public function testDefaultDownloadBehabiourCMSFields()
+    // {
+    //     $document = singleton(DMSDocument::class);
+    //     Config::modify()->update(DMSDocument::class, 'default_download_behaviour', 'open');
+    //     $cmsFields = $document->getCMSFields();
+    //     $this->assertEquals('open', $cmsFields->dataFieldByName('DownloadBehavior')->Value());
+    //
+    //
+    //     Config::modify()->update(DMSDocument::class, 'default_download_behaviour', 'download');
+    //     $cmsFields = $document->getCMSFields();
+    //     $this->assertEquals('download', $cmsFields->dataFieldByName('DownloadBehavior')->Value());
+    // }
 
     /**
      * Ensure that related documents can be retrieved for a given DMS document

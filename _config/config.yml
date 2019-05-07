@@ -6,3 +6,7 @@ SilverStripe\CMS\Model\SiteTree:
   extensions:
     - Sunnysideup\DMS\Extensions\DMSSiteTreeExtension
   documents_enabled: true
+
+SilverStripe\Assets\File:
+  extensions:
+    - Sunnysideup\DMS\Extensions\FileExtension

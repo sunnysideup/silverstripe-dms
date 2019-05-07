@@ -4,9 +4,10 @@ Only:
   moduleexists: taxonomy
 ---
 # todo: find out the exact name for taxonomy...
-TaxonomyType:
+SilverStripe\ORM\DataObject\TaxonomyType:
   extensions:
     - Sunnysideup\DMS\Extensions\DMSTaxonomyTypeExtension
+
 Sunnysideup\DMS\Model\DMSDocument:
   extensions:
     - Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension
@@ -15,6 +16,7 @@ Sunnysideup\DMS\Model\DMSDocument:
       title: 'Document has tags'
       field: SilverStripe\Forms\ListboxField
       filter: ExactMatchFilter
+
 Sunnysideup\DMS\Extensions\DMSTaxonomyTypeExtension:
   default_record_name: Document
   default_records:

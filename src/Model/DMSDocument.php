@@ -65,13 +65,6 @@ use SilverStripe\Core\Manifest\ModuleLoader;
  * @package dms
  *
  * @property Text Description
- * @property Boolean EmbargoedIndefinitely
- * @property Boolean EmbargoedUntilPublished
- * @property DateTime EmbargoedUntilDate
- * @property DateTime ExpireAtDate
- * @property Enum DownloadBehavior
- * @property Enum CanViewType Enum('Anyone, LoggedInUsers, OnlyTheseUsers', 'Anyone')
- * @property Enum CanEditType Enum('LoggedInUsers, OnlyTheseUsers', 'LoggedInUsers')
  *
  * @method ManyManyList RelatedDocuments
  * @method ManyManyList ViewerGroups
@@ -215,29 +208,6 @@ class DMSDocument extends File implements DMSDocumentInterface
         $fields->add($coverImageField);
 
 
-        $downloadBehaviorSource = array(
-            'open' => _t('DMSDocument.OPENINBROWSER', 'Open in browser'),
-            'download' => _t('DMSDocument.FORCEDOWNLOAD', 'Force download'),
-        );
-        $defaultDownloadBehaviour = Config::inst()->get(DMSDocument::class, 'default_download_behaviour');
-        if (!isset($downloadBehaviorSource[$defaultDownloadBehaviour])) {
-            user_error('Default download behaviour "' . $defaultDownloadBehaviour . '" not supported.', E_USER_WARNING);
-        } else {
-            $downloadBehaviorSource[$defaultDownloadBehaviour] .= ' (' . _t('DMSDocument.DEFAULT', 'default') . ')';
-        }
-
-        $fields->add(
-            OptionsetField::create(
-                'DownloadBehavior',
-                _t('DMSDocument.DOWNLOADBEHAVIOUR', 'Download behavior'),
-                $downloadBehaviorSource,
-                $defaultDownloadBehaviour
-            )
-            ->setDescription(
-                'How the visitor will view this file. <strong>Open in browser</strong> '
-                . 'allows files to be opened in a new tab.'
-            )
-        );
 
         //create upload field to replace document
         $uploadField = new DMSUploadField('ReplaceFile', 'Replace file');
@@ -470,21 +440,6 @@ class DMSDocument extends File implements DMSDocumentInterface
                 $this->CreatedByID = $currentUserID;
             }
             $this->LastEditedByID = $currentUserID;
-        }
-
-        // make sure default DownloadBehavior is respected when initially writing document
-        // in case the default in the enum is different than what's set in an outside config
-        $defaultDownloadBehaviour = Config::inst()->get(DMSDocument::class, 'default_download_behaviour');
-        if ($this->DownloadBehavior == null && !empty($defaultDownloadBehaviour)) {
-            $possibleBehaviors = $this->dbObject('DownloadBehavior')
-                ->enumValues();
-
-            if (array_key_exists($defaultDownloadBehaviour, $possibleBehaviors)) {
-                $behavior = $possibleBehaviors[$defaultDownloadBehaviour];
-                if ($behavior) {
-                    $this->DownloadBehavior = $behavior;
-                }
-            }
         }
     }
 

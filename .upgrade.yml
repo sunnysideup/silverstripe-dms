@@ -20,6 +20,6 @@ mappings:
   FileNotFoundException: Sunnysideup\DMS\Exceptions\FileNotFoundException
   DMSDocument_versions: Sunnysideup\DMS\Model\DMSDocument_versions
   DMSDocument: Sunnysideup\DMS\Model\DMSDocument
-  DMSDocument_Controller: Sunnysideup\DMS\Model\DMSDocument_Controller
+  DMSDocumentController: Sunnysideup\DMS\Control\DMSDocumentController
   DMSDocumentSet: Sunnysideup\DMS\Model\DMSDocumentSet
   ShortCodeRelationFinder: Sunnysideup\DMS\Tools\ShortCodeRelationFinder
