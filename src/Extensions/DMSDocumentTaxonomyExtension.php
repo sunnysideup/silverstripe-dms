@@ -26,7 +26,6 @@ class DMSDocumentTaxonomyExtension extends DataExtension
     {
         $tags = $this->getAllTagsMap();
         $tagField = ListboxField::create('Tags', _t('DMSDocumentTaxonomyExtension.TAGS', 'Tags'))
-            ->setMultiple(true)
             ->setSource($tags);
 
         if (empty($tags)) {

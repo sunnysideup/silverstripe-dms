@@ -192,28 +192,21 @@ class DMSDocument extends File implements DMSDocumentInterface
 
         $extraTasks = '';   //additional text to inject into the list of tasks at the bottom of a DMSDocument CMSfield
 
-        //get list of shortcode page relations
-        $relationFinder = new ShortCodeRelationFinder();
-        $relationList = $relationFinder->getList($this->ID);
-
-        $fieldsTop = $this->getFieldsForFile($relationList->count());
-        $fields->add($fieldsTop);
-
         $fields->add(TextField::create('Title', _t('DMSDocument.TITLE', 'Title')));
         $fields->add(TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description')));
 
         $coverImageField = UploadField::create('CoverImage', _t('DMSDocument.COVERIMAGE', 'Cover Image'));
         $coverImageField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
-        $coverImageField->setConfig('allowedMaxFileNumber', 1);
+        $coverImageField->setAllowedMaxFileNumber(1);
         $fields->add($coverImageField);
 
 
 
         //create upload field to replace document
-        $uploadField = new DMSUploadField('ReplaceFile', 'Replace file');
-        $uploadField->setConfig('allowedMaxFileNumber', 1);
-        $uploadField->setConfig('downloadTemplateName', 'ss-dmsuploadfield-downloadtemplate');
-        $uploadField->setRecord($this);
+        $uploadField = new UploadField('ReplaceFile', 'Replace file');
+        $uploadField->setAllowedMaxFileNumber(1);
+        //$uploadField->setConfig('downloadTemplateName', 'ss-dmsuploadfield-downloadtemplate');
+        //$uploadField->setRecord($this);
 
         $gridFieldConfig = GridFieldConfig::create()->addComponents(
             new GridFieldToolbarHeader(),
@@ -244,100 +237,50 @@ class DMSDocument extends File implements DMSDocumentInterface
             $gridFieldConfig
         );
 
-        $referencesGrid = GridField::create(
-            'References',
-            _t('DMSDocument.RelatedReferences', 'Related References'),
-            $relationList,
-            $gridFieldConfig
-        );
+        //todo: UPGRADE replace with standard versions functionality
+        // if (DMSDocument_versions::$enable_versions) {
+        //     $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
+        //         new GridFieldToolbarHeader(),
+        //         new GridFieldSortableHeader(),
+        //         new GridFieldDataColumns(),
+        //         new GridFieldPaginator(30)
+        //     );
+        //     $versionsGridFieldConfig->getComponentByType(GridFieldDataColumns::class)
+        //         ->setDisplayFields(Config::inst()->get(DMSDocument_versions::class, 'display_fields'))
+        //         ->setFieldFormatting(
+        //             array(
+        //                 'FilenameWithoutID' => '<a target="_blank" class="file-url" href="$Link">'
+        //                     . '$FilenameWithoutID</a>'
+        //             )
+        //         );
+        //
+        //     $versionsGrid =  GridField::create(
+        //         'Versions',
+        //         _t('DMSDocument.Versions', 'Versions'),
+        //         $this->getVersions(),
+        //         $versionsGridFieldConfig
+        //     );
+        //     $this->addActionPanelTask('find-versions', 'Versions');
+        // }
 
-        if (DMSDocument_versions::$enable_versions) {
-            $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
-                new GridFieldToolbarHeader(),
-                new GridFieldSortableHeader(),
-                new GridFieldDataColumns(),
-                new GridFieldPaginator(30)
-            );
-            $versionsGridFieldConfig->getComponentByType(GridFieldDataColumns::class)
-                ->setDisplayFields(Config::inst()->get(DMSDocument_versions::class, 'display_fields'))
-                ->setFieldFormatting(
-                    array(
-                        'FilenameWithoutID' => '<a target="_blank" class="file-url" href="$Link">'
-                            . '$FilenameWithoutID</a>'
-                    )
-                );
 
-            $versionsGrid =  GridField::create(
-                'Versions',
-                _t('DMSDocument.Versions', 'Versions'),
-                $this->getVersions(),
-                $versionsGridFieldConfig
-            );
-            $this->addActionPanelTask('find-versions', 'Versions');
-        }
-
-        $embargoValue = 'None';
-        if ($this->EmbargoedIndefinitely) {
-            $embargoValue = 'Indefinitely';
-        } elseif ($this->EmbargoedUntilPublished) {
-            $embargoValue = 'Published';
-        } elseif (!empty($this->EmbargoedUntilDate)) {
-            $embargoValue = DBDate::class;
-        }
-        $embargo = new OptionsetField(
-            'Embargo',
-            _t('DMSDocument.EMBARGO', 'Embargo'),
-            array(
-                'None' => _t('DMSDocument.EMBARGO_NONE', 'None'),
-                'Published' => _t('DMSDocument.EMBARGO_PUBLISHED', 'Hide document until page is published'),
-                'Indefinitely' => _t('DMSDocument.EMBARGO_INDEFINITELY', 'Hide document indefinitely'),
-                'Date' => _t('DMSDocument.EMBARGO_DATE', 'Hide until set date')
-            ),
-            $embargoValue
-        );
-        $embargoDatetime = DatetimeField::create('EmbargoedUntilDate', '');
-        $embargoDatetime->getDateField()
-            ->setConfig('showcalendar', true)
-            ->setConfig('dateformat', 'dd-MM-yyyy')
-            ->setConfig('datavalueformat', 'dd-MM-yyyy');
-
-        $expiryValue = 'None';
-        if (!empty($this->ExpireAtDate)) {
-            $expiryValue = DBDate::class;
-        }
-        $expiry = new OptionsetField(
-            'Expiry',
-            'Expiry',
-            array(
-                'None' => 'None',
-                'Date' => 'Set document to expire on'
-            ),
-            $expiryValue
-        );
-        $expiryDatetime = DatetimeField::create('ExpireAtDate', '');
-        $expiryDatetime->getDateField()
-            ->setConfig('showcalendar', true)
-            ->setConfig('dateformat', 'dd-MM-yyyy')
-            ->setConfig('datavalueformat', 'dd-MM-yyyy');
 
         // This adds all the actions details into a group.
         // Embargo, History, etc to go in here
         // These are toggled on and off via the Actions Buttons above
         // exit('hit');
         $actionsPanel = FieldGroup::create(
-            FieldGroup::create($embargo, $embargoDatetime)->addExtraClass('embargo'),
-            FieldGroup::create($expiry, $expiryDatetime)->addExtraClass('expiry'),
             FieldGroup::create($uploadField)->addExtraClass('replace'),
             FieldGroup::create($pagesGrid)->addExtraClass('find-usage'),
-            FieldGroup::create($referencesGrid)->addExtraClass('find-references'),
             FieldGroup::create($this->getPermissionsActionPanel())->addExtraClass('permissions')
         );
 
         if ($this->canEdit()) {
-            $actionsPanel->push(FieldGroup::create($versionsGrid)->addExtraClass('find-versions'));
-            $actionsPanel->push(
-                FieldGroup::create($this->getRelatedDocumentsGridField())->addExtraClass('find-relateddocuments')
-            );
+            //todo: UPGRADE replace with standard versions functionality
+            // $actionsPanel->push(FieldGroup::create($versionsGrid)->addExtraClass('find-versions'));
+            // $actionsPanel->push(
+            //     FieldGroup::create($this->getRelatedDocumentsGridField())->addExtraClass('find-relateddocuments')
+            // );
         } else {
             $this->removeActionPanelTask('find-relateddocuments')->removeActionPanelTask('find-versions');
         }
@@ -464,12 +407,25 @@ class DMSDocument extends File implements DMSDocumentInterface
         return DMS_DIR."/images/app_icons/{$ext}_32.png";
     }
 
+    public function Link(){
+        return $this->getLink();
+    }
+
     /**
      * Returns a link to download this DMSDocument from the DMS store
      * @return String
      */
-    public function getLink() {
-        return $this->owner->Link();
+    public function getLink()
+    {
+        $urlSegment = sprintf('%d-%s', $this->ID, URLSegmentFilter::create()->filter($this->getTitle()));
+        $result = Controller::join_links(Director::baseURL(), 'dmsdocument/' . $urlSegment);
+        if (!$this->canView()) {
+            $result = sprintf("javascript:alert('%s')", $this->getPermissionDeniedReason());
+        }
+
+        $this->extend('updateGetLink', $result);
+
+        return $result;
     }
 
     /**

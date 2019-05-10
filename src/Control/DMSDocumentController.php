@@ -6,6 +6,7 @@ use InvalidArgumentException;
 
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\Core\Convert;
+use SilverStripe\Control\Director;
 use Sunnysideup\DMS\Model\DMSDocument_versions;
 use SilverStripe\ORM\DataObject;
 use Sunnysideup\DMS\Model\DMSDocument;
@@ -27,7 +28,7 @@ class DMSDocumentController extends Controller
 
     public function init()
     {
-        Versioned::choose_site_stage();
+        Versioned::choose_site_stage($this->request);
         parent::init();
     }
 
@@ -87,16 +88,10 @@ class DMSDocumentController extends Controller
 
             if ($canView) {
 
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: upgrade to SS4
-  * OLD: ->getFullPath() (case sensitive)
-  * NEW: ->getFilename() (COMPLEX)
-  * EXP: You may need to add ASSETS_PATH."/" in front of this ...
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
-                $path = $doc->getFilename();
-                if (is_file($path)) {
+                $baseDir = Director::baseFolder();
+                $baseDirWithPublic = $baseDir . '/public/';
+                $path = $baseDirWithPublic . $doc->getURL();
+                if ($doc->exists()) {
                     $fileBin = trim(`whereis file`);
                     if (function_exists('finfo_file')) {
                         // discover the mime type properly
@@ -132,7 +127,7 @@ class DMSDocumentController extends Controller
 
                     //if a DMSDocument can be downloaded and all the permissions/privileges has passed,
 
-                    return $this->sendFile($path, $mime, $doc->getFilenameWithoutID(), $disposition);
+                    return $this->sendFile($path, $mime, $doc->Name, $disposition);
                 }
             }
         }
