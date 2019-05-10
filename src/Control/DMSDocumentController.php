@@ -50,8 +50,13 @@ class DMSDocumentController extends Controller
             $doc = DataObject::get_by_id(DMSDocument_versions::class, $id);
             $this->extend('updateVersionFromID', $doc, $request);
         } else {
+            $slugID = $this->getDocumentIdFromSlug($id);
             // Normal document
-            $doc = DataObject::get_by_id(DMSDocument::class, $this->getDocumentIdFromSlug($id));
+            $doc = DataObject::get_by_id(DMSDocument::class, $slugID);
+            //backwards compatibility - fall back to OriginalDMSDocumentID
+            if(!$doc){
+                $doc = DMSDocument::get()->filter(['OriginalDMSDocumentID' => $slugID])->first();
+            }
             $this->extend('updateDocumentFromID', $doc, $request);
         }
 

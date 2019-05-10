@@ -106,7 +106,7 @@ class DMSDocument extends File implements DMSDocumentInterface
     private static $plural_name = 'Documents';
 
     private static $summary_fields = array(
-        'Filename' => 'Filename',
+        'Name' => 'Filename',
         'Title' => 'Title',
         'getRelatedPages.count' => 'Page Use'
     );
@@ -185,8 +185,8 @@ class DMSDocument extends File implements DMSDocumentInterface
     public function getCMSFields()
     {
         //include JS to handling showing and hiding of bottom "action" tabs
-        Requirements::javascript(DMS_DIR . '/javascript/DMSDocumentCMSFields.js');
-        Requirements::css(DMS_DIR . '/dist/css/cmsbundle.css');
+        Requirements::javascript(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/js/DMSDocumentCMSFields.js')->getRelativePath());
+        Requirements::css(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/css/cmsbundle.css')->getRelativePath());
 
         $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
 
@@ -417,7 +417,11 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function getLink()
     {
-        $urlSegment = sprintf('%d-%s', $this->ID, URLSegmentFilter::create()->filter($this->getTitle()));
+        $linkID = $this->ID;
+        if($this->OriginalDMSDocumentID){
+            $linkID = $this->OriginalDMSDocumentID;
+        }
+        $urlSegment = sprintf('%d-%s', $linkID, URLSegmentFilter::create()->filter($this->getTitle()));
         $result = Controller::join_links(Director::baseURL(), 'dmsdocument/' . $urlSegment);
         if (!$this->canView()) {
             $result = sprintf("javascript:alert('%s')", $this->getPermissionDeniedReason());

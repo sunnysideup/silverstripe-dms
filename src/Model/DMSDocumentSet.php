@@ -38,6 +38,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Security\Permission;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Core\Manifest\ModuleLoader;
 
 /**
  * A document set is attached to Pages, and contains many DMSDocuments
@@ -52,15 +53,10 @@ class DMSDocumentSet extends DataObject
 
     private static $table_name = 'DMSDocumentSet';
 
+    private static $singular_name = 'DMS Document Set';
 
-    /**
-      * ### @@@@ START REPLACEMENT @@@@ ###
-      * WHY: upgrade to SS4
-      * OLD: private static $db = (case sensitive)
-      * NEW: private static $db = (COMPLEX)
-      * EXP: Make sure to add a private static $table_name!
-      * ### @@@@ STOP REPLACEMENT @@@@ ###
-      */
+    private static $plural_name = 'DMS Document Sets';
+
     private static $db = array(
         'Title' => 'Varchar(255)',
         'KeyValuePairs' => 'Text',
@@ -68,15 +64,6 @@ class DMSDocumentSet extends DataObject
         'SortByDirection' => "Enum('DESC,ASC')')",
     );
 
-
-    /**
-      * ### @@@@ START REPLACEMENT @@@@ ###
-      * WHY: upgrade to SS4
-      * OLD: private static $has_one = (case sensitive)
-      * NEW: private static $has_one = (COMPLEX)
-      * EXP: Make sure to add a private static $table_name!
-      * ### @@@@ STOP REPLACEMENT @@@@ ###
-      */
     private static $has_one = array(
         'Page' => SiteTree::class,
     );

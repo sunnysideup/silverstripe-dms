@@ -27,8 +27,7 @@
             "dev-master": "2.4.x-dev"
         },
         "expose": [
-            "client/javascript",
-            "client/images"
+            "client"
         ]
     },
     "autoload": {
