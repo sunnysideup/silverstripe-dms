@@ -24,10 +24,12 @@ use Sunnysideup\DMS\DMS;
 use SilverStripe\View\Requirements;
 use SilverStripe\Forms\FieldList;
 use Sunnysideup\DMS\Tools\ShortCodeRelationFinder;
+use SilverStripe\Forms\ListboxField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\OptionsetField;
 use Sunnysideup\DMS\Cms\DMSUploadField;
 use SilverStripe\Forms\GridField\GridFieldConfig;
@@ -117,18 +119,6 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     private static $default_download_behaviour = 'download';
 
-    /**
-     * A key value map of the "actions" tabs that will be added to the CMS fields
-     *
-     * @var array
-     */
-    protected $actionTasks = array(
-        'replace' => 'Replace',
-        'find-usage' => 'Usage',
-        'find-references' => 'References',
-        'find-relateddocuments' => 'Related Documents'
-    );
-
 
     /**
      * Return the type of file for the given extension
@@ -184,9 +174,6 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function getCMSFields()
     {
-        //include JS to handling showing and hiding of bottom "action" tabs
-        Requirements::javascript(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/js/DMSDocumentCMSFields.js')->getRelativePath());
-        Requirements::css(ModuleLoader::getModule('sunnysideup/dms')->getResource('/client/css/cmsbundle.css')->getRelativePath());
 
         $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
 
@@ -194,6 +181,18 @@ class DMSDocument extends File implements DMSDocumentInterface
 
         $fields->add(TextField::create('Title', _t('DMSDocument.TITLE', 'Title')));
         $fields->add(TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description')));
+
+        if($this->hasExtension('Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension')){
+            $tags = $this->getAllTagsMap();
+            $tagField = ListboxField::create('Tags', _t('DMSDocumentTaxonomyExtension.TAGS', 'Tags'))
+                ->setSource($tags);
+
+            if (empty($tags)) {
+                $tagField->setAttribute('data-placeholder', _t('DMSDocumentTaxonomyExtension.NOTAGS', 'No tags found'));
+            }
+
+            $fields->add($tagField);
+        }
 
         $coverImageField = UploadField::create('CoverImage', _t('DMSDocument.COVERIMAGE', 'Cover Image'));
         $coverImageField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
@@ -205,8 +204,13 @@ class DMSDocument extends File implements DMSDocumentInterface
         //create upload field to replace document
         $uploadField = new UploadField('ReplaceFile', 'Replace file');
         $uploadField->setAllowedMaxFileNumber(1);
+        $fields->add(HeaderField::create('ReplaceFileHeader', 'File Replacement'));
+        $fields->add($uploadField);
         //$uploadField->setConfig('downloadTemplateName', 'ss-dmsuploadfield-downloadtemplate');
         //$uploadField->setRecord($this);
+
+
+
 
         $gridFieldConfig = GridFieldConfig::create()->addComponents(
             new GridFieldToolbarHeader(),
@@ -237,60 +241,45 @@ class DMSDocument extends File implements DMSDocumentInterface
             $gridFieldConfig
         );
 
-        //todo: UPGRADE replace with standard versions functionality
-        // if (DMSDocument_versions::$enable_versions) {
-        //     $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
-        //         new GridFieldToolbarHeader(),
-        //         new GridFieldSortableHeader(),
-        //         new GridFieldDataColumns(),
-        //         new GridFieldPaginator(30)
-        //     );
-        //     $versionsGridFieldConfig->getComponentByType(GridFieldDataColumns::class)
-        //         ->setDisplayFields(Config::inst()->get(DMSDocument_versions::class, 'display_fields'))
-        //         ->setFieldFormatting(
-        //             array(
-        //                 'FilenameWithoutID' => '<a target="_blank" class="file-url" href="$Link">'
-        //                     . '$FilenameWithoutID</a>'
-        //             )
-        //         );
-        //
-        //     $versionsGrid =  GridField::create(
-        //         'Versions',
-        //         _t('DMSDocument.Versions', 'Versions'),
-        //         $this->getVersions(),
-        //         $versionsGridFieldConfig
-        //     );
-        //     $this->addActionPanelTask('find-versions', 'Versions');
-        // }
+        $fields->add(HeaderField::create('PagesHeader', 'Usage'));
+        $fields->add($pagesGrid);
 
 
-
-        // This adds all the actions details into a group.
-        // Embargo, History, etc to go in here
-        // These are toggled on and off via the Actions Buttons above
-        // exit('hit');
-        $actionsPanel = FieldGroup::create(
-            FieldGroup::create($uploadField)->addExtraClass('replace'),
-            FieldGroup::create($pagesGrid)->addExtraClass('find-usage'),
-            FieldGroup::create($this->getPermissionsActionPanel())->addExtraClass('permissions')
-        );
 
         if ($this->canEdit()) {
-            //todo: UPGRADE replace with standard versions functionality
-            // $actionsPanel->push(FieldGroup::create($versionsGrid)->addExtraClass('find-versions'));
-            // $actionsPanel->push(
-            //     FieldGroup::create($this->getRelatedDocumentsGridField())->addExtraClass('find-relateddocuments')
-            // );
-        } else {
-            $this->removeActionPanelTask('find-relateddocuments')->removeActionPanelTask('find-versions');
+            $fields->add($this->getRelatedDocumentsGridField());
+
+            $fields->add(HeaderField::create('PermissionsHeader', 'Permissions'));
+
+            $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
+                new GridFieldToolbarHeader(),
+                new GridFieldSortableHeader(),
+                new GridFieldDataColumns(),
+                new GridFieldPaginator(30)
+            );
+            $versionsGridFieldConfig->getComponentByType(GridFieldDataColumns::class)
+                ->setFieldFormatting(
+                    array(
+                        'FilenameWithoutID' => '<a target="_blank" class="file-url" href="$Link">'
+                            . '$FilenameWithoutID</a>'
+                    )
+                );
+
+            $versionsGrid =  GridField::create(
+                'Versions',
+                _t('DMSDocument.Versions', 'Versions'),
+                Versioned::get_all_versions(DMSDocument::class, $this->ID),
+                $versionsGridFieldConfig
+            );
+
+            $fields->add($versionsGrid);
+
+            $fields->add($this->getPermissionsActionPanel());
         }
-        $fields->add(LiteralField::create('BottomTaskSelection', $this->getActionTaskHtml()));
-        $actionsPanel->setName('ActionsPanel');
-        $actionsPanel->addExtraClass('dmsdocument-actionspanel');
-        $fields->push($actionsPanel);
+
+
 
         $this->extend('updateCMSFields', $fields);
-
         return $fields;
     }
 
@@ -633,8 +622,6 @@ class DMSDocument extends File implements DMSDocumentInterface
         );
 
         $gridFieldConfig = $gridField->getConfig();
-        $gridFieldConfig->removeComponentsByType(GridFieldEditButton::class);
-        $gridFieldConfig->addComponent(new DMSGridFieldEditButton(), GridFieldDeleteAction::class);
 
         $gridField->getConfig()->removeComponentsByType(GridFieldAddNewButton::class);
         // Move the autocompleter to the left
@@ -733,30 +720,6 @@ class DMSDocument extends File implements DMSDocumentInterface
         return $this;
     }
 
-    /**
-     * Returns a HTML representation of the action tasks for the CMS
-     *
-     * @return string
-     */
-    public function getActionTaskHtml()
-    {
-        $html = '<div class="field dmsdocment-actions">'
-            . '<label class="left">' . _t('DMSDocument.ACTIONS_LABEL', 'Actions') . '</label>'
-            . '<ul>';
-
-        foreach ($this->actionTasks as $panelKey => $title) {
-            $panelKey = Convert::raw2xml($panelKey);
-            $title = Convert::raw2xml($title);
-
-            $html .= '<li class="ss-ui-button dmsdocument-action" data-panel="' . $panelKey . '">'
-                . _t('DMSDocument.ACTION_' . strtoupper($panelKey), $title)
-                . '</li>';
-        }
-
-        $html .= '</ul></div>';
-
-        return $html;
-    }
 
     /**
      * Removes an "action panel" tasks
