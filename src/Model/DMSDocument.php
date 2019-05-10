@@ -7,6 +7,7 @@ use Exception;
 
 
 use Sunnysideup\DMS\Model\DMSDocumentSet;
+use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Security\Member;
 use Sunnysideup\DMS\Model\DMSDocument;
@@ -31,7 +32,7 @@ use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\OptionsetField;
-use Sunnysideup\DMS\Cms\DMSUploadField;
+use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\GridField\GridFieldSortableHeader;
@@ -46,7 +47,6 @@ use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\FieldGroup;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Assets\File;
 use SilverStripe\Forms\ReadonlyField;
@@ -174,75 +174,82 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function getCMSFields()
     {
+        $fields = new FieldList();
+        if(!$this->ID){
+            $dmsFolder = Folder::find_or_make('dmsassets');
+            $fields->add(
+                DropdownField::create(
+                    'FileID',
+                    'DMS Document',
+                    File::get()->filter(['ParentID' => $dmsFolder->ID])->exclude(['ClassName' => Folder::class])
+                )
+            );
+            return $fields;
+        }
+        else {
 
-        $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
+            $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
 
-        $extraTasks = '';   //additional text to inject into the list of tasks at the bottom of a DMSDocument CMSfield
 
-        $fields->add(TextField::create('Title', _t('DMSDocument.TITLE', 'Title')));
-        $fields->add(TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description')));
+            //create upload field to replace document
+            // $uploadField = new UploadField('FileID', 'File');
+            // $uploadField->setAllowedMaxFileNumber(1);
+            // $fields->add($uploadField);
+            //$uploadField->setConfig('downloadTemplateName', 'ss-dmsuploadfield-downloadtemplate');
+            //$uploadField->setRecord($this);
 
-        if($this->hasExtension('Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension')){
-            $tags = $this->getAllTagsMap();
-            $tagField = ListboxField::create('Tags', _t('DMSDocumentTaxonomyExtension.TAGS', 'Tags'))
-                ->setSource($tags);
+            $fields->add(TextField::create('Title', _t('DMSDocument.TITLE', 'Title')));
+            $fields->add(TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description')));
 
-            if (empty($tags)) {
-                $tagField->setAttribute('data-placeholder', _t('DMSDocumentTaxonomyExtension.NOTAGS', 'No tags found'));
+            if($this->hasExtension('Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension')){
+                $tags = $this->getAllTagsMap();
+                $tagField = ListboxField::create('Tags', _t('DMSDocumentTaxonomyExtension.TAGS', 'Tags'))
+                    ->setSource($tags);
+
+                if (empty($tags)) {
+                    $tagField->setAttribute('data-placeholder', _t('DMSDocumentTaxonomyExtension.NOTAGS', 'No tags found'));
+                }
+
+                $fields->add($tagField);
             }
 
-            $fields->add($tagField);
+            $coverImageField = UploadField::create('CoverImage', _t('DMSDocument.COVERIMAGE', 'Cover Image'));
+            $coverImageField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
+            $coverImageField->setAllowedMaxFileNumber(1);
+            $fields->add($coverImageField);
+
+            $gridFieldConfig = GridFieldConfig::create()->addComponents(
+                new GridFieldToolbarHeader(),
+                new GridFieldSortableHeader(),
+                new GridFieldDataColumns(),
+                new GridFieldPaginator(30),
+                //new GridFieldEditButton(),
+                new GridFieldDetailForm()
+            );
+
+            $gridFieldConfig->getComponentByType(GridFieldDataColumns::class)
+                ->setDisplayFields(array(
+                    'Title' => 'Title',
+                    'ClassName' => 'Page Type',
+                    'ID' => 'Page ID'
+                ))
+                ->setFieldFormatting(array(
+                    'Title' => sprintf(
+                        '<a class=\"cms-panel-link\" href=\"%s/$ID\">$Title</a>',
+                        singleton(CMSPageEditController::class)->Link('show')
+                    )
+                ));
+
+            $pagesGrid = GridField::create(
+                'Pages',
+                _t('DMSDocument.RelatedPages', 'Related Pages'),
+                $this->getRelatedPages(),
+                $gridFieldConfig
+            );
+
+            $fields->add(HeaderField::create('PagesHeader', 'Usage'));
+            $fields->add($pagesGrid);
         }
-
-        $coverImageField = UploadField::create('CoverImage', _t('DMSDocument.COVERIMAGE', 'Cover Image'));
-        $coverImageField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
-        $coverImageField->setAllowedMaxFileNumber(1);
-        $fields->add($coverImageField);
-
-
-
-        //create upload field to replace document
-        $uploadField = new UploadField('ReplaceFile', 'Replace file');
-        $uploadField->setAllowedMaxFileNumber(1);
-        $fields->add(HeaderField::create('ReplaceFileHeader', 'File Replacement'));
-        $fields->add($uploadField);
-        //$uploadField->setConfig('downloadTemplateName', 'ss-dmsuploadfield-downloadtemplate');
-        //$uploadField->setRecord($this);
-
-
-
-
-        $gridFieldConfig = GridFieldConfig::create()->addComponents(
-            new GridFieldToolbarHeader(),
-            new GridFieldSortableHeader(),
-            new GridFieldDataColumns(),
-            new GridFieldPaginator(30),
-            //new GridFieldEditButton(),
-            new GridFieldDetailForm()
-        );
-
-        $gridFieldConfig->getComponentByType(GridFieldDataColumns::class)
-            ->setDisplayFields(array(
-                'Title' => 'Title',
-                'ClassName' => 'Page Type',
-                'ID' => 'Page ID'
-            ))
-            ->setFieldFormatting(array(
-                'Title' => sprintf(
-                    '<a class=\"cms-panel-link\" href=\"%s/$ID\">$Title</a>',
-                    singleton(CMSPageEditController::class)->Link('show')
-                )
-            ));
-
-        $pagesGrid = GridField::create(
-            'Pages',
-            _t('DMSDocument.RelatedPages', 'Related Pages'),
-            $this->getRelatedPages(),
-            $gridFieldConfig
-        );
-
-        $fields->add(HeaderField::create('PagesHeader', 'Usage'));
-        $fields->add($pagesGrid);
 
 
 
@@ -275,13 +282,11 @@ class DMSDocument extends File implements DMSDocumentInterface
             $fields->add($versionsGrid);
 
             $fields->add($this->getPermissionsActionPanel());
+            $this->extend('updateCMSFields', $fields);
+            return $fields;
         }
-
-
-
-        $this->extend('updateCMSFields', $fields);
-        return $fields;
     }
+
 
     /**
      * Adds permissions selection fields to a composite field and returns so it can be used in the "actions panel"
