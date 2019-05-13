@@ -262,7 +262,7 @@ class DMSDocument extends File implements DMSDocumentInterface
 
 
 
-                $versionsGridFieldConfig = GridFieldConfig_RecordViewer::create()->addComponents(
+                $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
                     new GridFieldSortableHeader(),
                     new GridFieldPaginator(30)
                 );
