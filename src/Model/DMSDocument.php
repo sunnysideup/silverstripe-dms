@@ -112,6 +112,8 @@ class DMSDocument extends File implements DMSDocumentInterface
     private static $summary_fields = [
         'Name' => 'Filename',
         'Title' => 'Title',
+        'CreatedBy.Title' => 'Creator',
+        'LastEditedBy.Title' => 'Last Editor',
         'Version' => 'Version',
         'getRelatedPages.count' => 'Page Use'
     ];
