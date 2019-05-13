@@ -40,7 +40,6 @@ use SilverStripe\Forms\GridField\GridFieldPaginator;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\CMS\Controllers\CMSPageEditController;
 use SilverStripe\Forms\GridField\GridField;
-use Sunnysideup\DMS\Model\DMSDocument_versions;
 use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\FieldGroup;
@@ -50,6 +49,7 @@ use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\DateField_Disabled;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\Forms\GridField\GridFieldEditButton;
 use Sunnysideup\DMS\Cms\DMSGridFieldEditButton;
@@ -57,6 +57,7 @@ use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Core\Convert;
+use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\ORM\DataObject;
 use Sunnysideup\DMS\Interfaces\DMSDocumentInterface;
 use SilverStripe\Core\Manifest\ModuleLoader;
@@ -111,6 +112,7 @@ class DMSDocument extends File implements DMSDocumentInterface
     private static $summary_fields = [
         'Name' => 'Filename',
         'Title' => 'Title',
+        'Version' => 'Version',
         'getRelatedPages.count' => 'Page Use'
     ];
 
@@ -175,8 +177,18 @@ class DMSDocument extends File implements DMSDocumentInterface
     public function getCMSFields()
     {
         $fields = new FieldList();
+        $siteConfig = SiteConfig::current_site_config();
+        if(!$siteConfig->DMSFolderID){
+            $fields->add(
+                LiteralField::create(
+                    'DMSFolderMessage',
+                    '<h2>You need to <a href="/admin/settings/" target="_blank">set</a> the folder for the DMS documents before you can create a DMS document.'
+                )
+            );
+            return $fields;
+        }
+
         if(!$this->ID){
-            $dmsFolder = Folder::find_or_make('dmsassets');
             $uploadField = new UploadField('TempFile', 'File');
             $uploadField->setAllowedMaxFileNumber(1);
             $fields->add($uploadField);
@@ -185,6 +197,9 @@ class DMSDocument extends File implements DMSDocumentInterface
         else {
 
             $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
+
+            $infoFields = $this->getFieldsForFile();
+            $fields->add($infoFields);
 
             $uploadField = new UploadField('TempFile', 'Replace Current File');
             $uploadField->setAllowedMaxFileNumber(1);
@@ -241,42 +256,37 @@ class DMSDocument extends File implements DMSDocumentInterface
 
             $fields->add(HeaderField::create('PagesHeader', 'Usage'));
             $fields->add($pagesGrid);
-        }
+
+            if ($this->canEdit()) {
+                $fields->add($this->getRelatedDocumentsGridField());
 
 
 
-        if ($this->canEdit()) {
-            $fields->add($this->getRelatedDocumentsGridField());
-
-            $fields->add(HeaderField::create('PermissionsHeader', 'Permissions'));
-
-            $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
-                new GridFieldToolbarHeader(),
-                new GridFieldSortableHeader(),
-                new GridFieldDataColumns(),
-                new GridFieldPaginator(30)
-            );
-            $versionsGridFieldConfig->getComponentByType(GridFieldDataColumns::class)
-                ->setFieldFormatting(
-                    array(
-                        'FilenameWithoutID' => '<a target="_blank" class="file-url" href="$Link">'
-                            . '$FilenameWithoutID</a>'
-                    )
+                $versionsGridFieldConfig = GridFieldConfig_RecordViewer::create()->addComponents(
+                    new GridFieldSortableHeader(),
+                    new GridFieldPaginator(30)
                 );
 
-            $versionsGrid =  GridField::create(
-                'Versions',
-                _t('DMSDocument.Versions', 'Versions'),
-                Versioned::get_all_versions(DMSDocument::class, $this->ID),
-                $versionsGridFieldConfig
-            );
+                $versionsGrid =  GridField::create(
+                    'Versions',
+                    _t('DMSDocument.Versions', 'Versions'),
+                    Versioned::get_all_versions(DMSDocument::class, $this->ID),
+                    $versionsGridFieldConfig
+                );
 
-            $fields->add($versionsGrid);
+                $fields->add($versionsGrid);
 
-            $fields->add($this->getPermissionsActionPanel());
+                $fields->add(HeaderField::create('PermissionsHeader', 'Permissions'));
+                $fields->add($this->getPermissionsActionPanel());
+
+
+
+            }
             $this->extend('updateCMSFields', $fields);
+
             return $fields;
         }
+
     }
 
 
@@ -324,8 +334,6 @@ class DMSDocument extends File implements DMSDocumentInterface
 
     public function onBeforeWrite()
     {
-        parent::onBeforeWrite();
-
         // Set user fields
         if ($currentUserID = Member::currentUserID()) {
             if (!$this->CreatedByID) {
@@ -357,12 +365,18 @@ class DMSDocument extends File implements DMSDocumentInterface
                     }
                 }
                 $this->TempFileID = 0;
+                $siteConfig = SiteConfig::current_site_config();
+                if($siteConfig->DMSFolder() && $siteConfig->DMSFolder()->exists()){
+                    $this->ParentID = $siteConfig->DMSFolderID;
+                }
                 //delete the old file records
                 DB::query('DELETE FROM "File" WHERE "ID" =  ' . $file->ID);
                 DB::query('DELETE FROM "File_Live" WHERE "ID" =  ' . $file->ID);
                 DB::query('DELETE FROM "File_Versions" WHERE "RecordID" =  ' . $file->ID);
             }
         }
+
+        parent::onBeforeWrite();
     }
 
     /**
@@ -375,15 +389,7 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function Icon($ext)
     {
-        if (!Director::fileExists(DMS_DIR."/images/app_icons/{$ext}_32.png")) {
-            $ext = File::get_app_category($ext);
-        }
-
-        if (!Director::fileExists(DMS_DIR."/images/app_icons/{$ext}_32.png")) {
-            $ext = "generic";
-        }
-
-        return DMS_DIR."/images/app_icons/{$ext}_32.png";
+        return "/resources/vendor/sunnysideup/dms/client/images/app_icons/{$ext}_32.png";
     }
 
     public function Link(){
@@ -421,56 +427,18 @@ class DMSDocument extends File implements DMSDocumentInterface
         return strtolower(pathinfo($this->Filename, PATHINFO_EXTENSION));
     }
 
-    /**
-     * @return string
-     */
-    public function getSize()
-    {
-        $size = $this->getAbsoluteSize();
-        return ($size) ? File::format_size($size) : false;
-    }
-
-    /**
-     * Return the size of the file associated with the document.
-     *
-     * @return string
-     */
-    public function getAbsoluteSize()
-    {
-
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: upgrade to SS4
-  * OLD: ->getFullPath() (case sensitive)
-  * NEW: ->getFilename() (COMPLEX)
-  * EXP: You may need to add ASSETS_PATH."/" in front of this ...
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
-        return file_exists($this->getFilename()) ? filesize($this->getFilename()) : null;
-    }
-
-    /**
-     * An alias to DMSDocument::getSize()
-     *
-     * @return string
-     */
-    public function getFileSizeFormatted()
-    {
-        return $this->getSize();
-    }
 
 
     /**
      * @return FieldList
      */
-    protected function getFieldsForFile($relationListCount)
+    protected function getFieldsForFile()
     {
         $extension = $this->getExtension();
 
-        $previewField = new LiteralField(
+        $previewField = LiteralField::create(
             "ImageFull",
-            "<img id='thumbnailImage' class='thumbnail-preview' src='{$this->Icon($extension)}?r="
-            . rand(1, 100000) . "' alt='{$this->Title}' />\n"
+            '<img id="thumbnailImage" class="thumbnail-preview" src="' . $this->Icon($extension) . '"" alt="' . $this->Title . '"/>'
         );
 
         //count the number of pages this document is published on
@@ -480,12 +448,7 @@ class DMSDocument extends File implements DMSDocumentInterface
             $publishedOnValue = "$publishedOnCount page";
         }
 
-        $relationListCountValue = "$relationListCount pages";
-        if ($relationListCount == 1) {
-            $relationListCountValue = "$relationListCount page";
-        }
-
-        $fields = new FieldGroup(
+        $fields =  CompositeField::create(
             $filePreview = CompositeField::create(
                 CompositeField::create(
                     $previewField
@@ -498,21 +461,16 @@ class DMSDocument extends File implements DMSDocumentInterface
                             _t('AssetTableField.TYPE', 'File type') . ':',
                             self::get_file_type($extension)
                         ),
-                        new ReadonlyField(
-                            "Size",
-                            _t('AssetTableField.SIZE', 'File size') . ':',
-                            $this->getFileSizeFormatted()
-                        ),
-                        $urlField = new ReadonlyField(
+                        $urlField = LiteralField::create(
                             'ClickableURL',
-                            _t('AssetTableField.URL', 'URL'),
-                            sprintf(
-                                '<a href="%s" target="_blank" class="file-url">%s</a>',
-                                $this->getLink(),
-                                $this->getLink()
-                            )
+                            '<div class="form-group field readonly">
+                                <label class="form__field-label">URL:</label>
+                                <div class="form__field-holder">
+                                    <a href="'.$this->getLink().'" target="_blank" class="file-url">'.$this->getLink().'</a>
+                                </div>
+                            </div>'
                         ),
-                        new ReadonlyField("FilenameWithoutIDField", "Filename". ':', $this->getFilenameWithoutID()),
+                        ReadonlyField::create("FilenameWithoutIDField", "Filename". ':', $this->fileName),
                         new DateField_Disabled(
                             "Created",
                             _t('AssetTableField.CREATED', 'First uploaded') . ':',
@@ -523,24 +481,13 @@ class DMSDocument extends File implements DMSDocumentInterface
                             _t('AssetTableField.LASTEDIT', 'Last changed') . ':',
                             $this->LastEdited
                         ),
-                        new ReadonlyField("PublishedOn", "Published on". ':', $publishedOnValue),
-                        new ReadonlyField("ReferencedOn", "Referenced on". ':', $relationListCountValue)
+                        new ReadonlyField("PublishedOn", "Published on". ':', $publishedOnValue)
                     )->setName('FilePreviewDataFields')
                 )->setName("FilePreviewData")->addExtraClass('cms-file-info-data')
             )->setName("FilePreview")->addExtraClass('cms-file-info')
         );
 
         $fields->addExtraClass('dmsdocument-documentdetails');
-
-        /**
-          * ### @@@@ START REPLACEMENT @@@@ ###
-          * WHY: upgrade to SS4
-          * OLD: ->dontEscape (case sensitive)
-          * NEW: ->dontEscape (COMPLEX)
-          * EXP: dontEscape is not longer in use for form fields, please use HTMLReadonlyField (or similar) instead.
-          * ### @@@@ STOP REPLACEMENT @@@@ ###
-          */
-        $urlField->dontEscape = true;
 
         $this->extend('updateFieldsForFile', $fields);
 

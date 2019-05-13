@@ -11,13 +11,16 @@ use SilverStripe\ORM\DataExtension;
 
 class DMSDocumentTaxonomyExtension extends DataExtension
 {
-    private static $db = array(
-        'OriginalDMSDocumentID' => 'Int'
-    );
 
     private static $many_many = array(
         'Tags' => TaxonomyTerm::class
     );
+
+    private static $many_many_extraFields = [
+        'Tags' => [
+            'OriginalDMSDocumentID' => 'Int'
+        ]
+    ];
 
     /**
      * Return an array of all the available tags that a document can use. Will return a list containing a taxonomy

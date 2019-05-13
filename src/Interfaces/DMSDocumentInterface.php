@@ -21,21 +21,6 @@ interface DMSDocumentInterface
     public function getExtension();
 
     /**
-     * Returns the size of the file type in an appropriate format.
-     *
-     * @return string
-     */
-    public function getSize();
-
-    /**
-     * Return the size of the file associated with the document, in bytes.
-     *
-     * @return int
-     */
-    public function getAbsoluteSize();
-
-
-    /**
      * Takes a File object or a String (path to a file) and copies it into the DMS, replacing the original document file
      * but keeping the rest of the document unchanged.
      * @param $file File object, or String that is path to a file to store

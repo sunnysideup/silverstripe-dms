@@ -10,3 +10,7 @@ SilverStripe\CMS\Model\SiteTree:
 SilverStripe\Assets\File:
   extensions:
     - Sunnysideup\DMS\Extensions\FileExtension
+
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - Sunnysideup\DMS\Extensions\DMSSettings

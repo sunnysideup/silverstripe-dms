@@ -106,17 +106,6 @@ class DMSSiteTreeExtension extends DataExtension
         }
     }
 
-    public function onBeforePublish()
-    {
-        $embargoedDocuments = $this->owner->getAllDocuments()->filter('EmbargoedUntilPublished', true);
-        if ($embargoedDocuments->count() > 0) {
-            foreach ($embargoedDocuments as $doc) {
-                $doc->EmbargoedUntilPublished = false;
-                $doc->write();
-            }
-        }
-    }
-
     /**
      * Returns the title of the page with the total number of documents it has associated with it across
      * all document sets

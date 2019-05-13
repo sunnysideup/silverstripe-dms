@@ -2,8 +2,6 @@
 
 namespace Sunnysideup\DMS\Extensions;
 
-
-use SilverStripe\Assets\Folder;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataExtension;
 
@@ -23,16 +21,4 @@ class FileExtension extends DataExtension
         'OriginalDMSDocumentID' => true
     ];
 
-
-    /**
-     * Event handler called before writing to the database.
-     */
-    public function onBeforePublish()
-    {
-        $dmsFolder = Folder::find_or_make('dmsassets');
-        if($this->owner->ParentID === $dmsFolder->ID){
-            $this->owner->ClassName = DMSDocument::class;
-            $this->owner->write();
-        }
-    }
 }
