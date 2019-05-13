@@ -4,9 +4,8 @@ namespace Sunnysideup\DMS\Model;
 
 use Exception;
 
-
-
 use Sunnysideup\DMS\Model\DMSDocumentSet;
+use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Security\Member;
@@ -48,7 +47,6 @@ use SilverStripe\Forms\FieldGroup;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Forms\CompositeField;
-use SilverStripe\Assets\File;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\DateField_Disabled;
 use SilverStripe\ORM\ArrayList;
@@ -80,45 +78,59 @@ use SilverStripe\Core\Manifest\ModuleLoader;
  */
 class DMSDocument extends File implements DMSDocumentInterface
 {
-
-
-    private static $db = array(
-        "Description" => 'Text'
-    );
-
-    private static $belongs_many_many = array(
-        'Sets' => DMSDocumentSet::class
-    );
-
-
-    private static $table_name = 'DMSDocument';
-
-    private static $has_one = array(
-        'CoverImage' => Image::class,
-        'CreatedBy' => Member::class,
-        'LastEditedBy' => Member::class,
-    );
-
-    private static $many_many = array(
-        'RelatedDocuments' => DMSDocument::class
-    );
-
     private static $singular_name = 'Document';
 
     private static $plural_name = 'Documents';
 
-    private static $summary_fields = array(
+    private static $table_name = 'DMSDocument';
+
+    private static $db = [
+        "Description" => 'Text'
+    ];
+
+    private static $has_one = [
+        'CoverImage' => Image::class,
+        'TempFile' => File::class,
+        'CreatedBy' => Member::class,
+        'LastEditedBy' => Member::class
+    ];
+
+    private static $owns = [
+        'CoverImage',
+        'TempFile'
+    ];
+
+    private static $many_many = [
+        'RelatedDocuments' => DMSDocument::class
+    ];
+
+    private static $belongs_many_many = [
+        'Sets' => DMSDocumentSet::class
+    ];
+
+    private static $summary_fields = [
         'Name' => 'Filename',
         'Title' => 'Title',
         'getRelatedPages.count' => 'Page Use'
-    );
+    ];
 
-    /**
-     * @var string download|open
-     * @config
-     */
-    private static $default_download_behaviour = 'download';
+    private static $do_not_copy = [
+        'ID',
+        'ClassName',
+        'OwnerID'
+    ];
 
+    private static $only_copy_if_empty = [
+        'LastEdited',
+        'Created',
+        'Version',
+        'CanViewType',
+        'CanEditType',
+        'ShowInSearch',
+        'FileHash',
+        'FileFilename',
+        'FileVariant'
+    ];
 
     /**
      * Return the type of file for the given extension
@@ -157,18 +169,6 @@ class DMSDocument extends File implements DMSDocumentInterface
         return isset($types[$ext]) ? $types[$ext] : $ext;
     }
 
-
-    /**
-     * Returns the Description field with HTML <br> tags added when there is a
-     * line break.
-     *
-     * @return string
-     */
-    public function getDescriptionWithLineBreak()
-    {
-        return nl2br($this->getField('Description'));
-    }
-
     /**
      * @return FieldList
      */
@@ -177,26 +177,18 @@ class DMSDocument extends File implements DMSDocumentInterface
         $fields = new FieldList();
         if(!$this->ID){
             $dmsFolder = Folder::find_or_make('dmsassets');
-            $fields->add(
-                DropdownField::create(
-                    'FileID',
-                    'DMS Document',
-                    File::get()->filter(['ParentID' => $dmsFolder->ID])->exclude(['ClassName' => Folder::class])
-                )
-            );
+            $uploadField = new UploadField('TempFile', 'File');
+            $uploadField->setAllowedMaxFileNumber(1);
+            $fields->add($uploadField);
             return $fields;
         }
         else {
 
             $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
 
-
-            //create upload field to replace document
-            // $uploadField = new UploadField('FileID', 'File');
-            // $uploadField->setAllowedMaxFileNumber(1);
-            // $fields->add($uploadField);
-            //$uploadField->setConfig('downloadTemplateName', 'ss-dmsuploadfield-downloadtemplate');
-            //$uploadField->setRecord($this);
+            $uploadField = new UploadField('TempFile', 'Replace Current File');
+            $uploadField->setAllowedMaxFileNumber(1);
+            $fields->add($uploadField);
 
             $fields->add(TextField::create('Title', _t('DMSDocument.TITLE', 'Title')));
             $fields->add(TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description')));
@@ -329,47 +321,10 @@ class DMSDocument extends File implements DMSDocumentInterface
         return CompositeField::create($fields);
     }
 
-    /**
-     * Return a title to use on the frontend, preferably the "title", otherwise the filename without it's numeric ID
-     *
-     * @return string
-     */
-    public function getTitle()
-    {
-        if ($this->getField('Title')) {
-            return $this->getField('Title');
-        }
-        return $this->FilenameWithoutID;
-    }
 
     public function onBeforeWrite()
     {
         parent::onBeforeWrite();
-
-        if (isset($this->Embargo)) {
-            //set the embargo options from the OptionSetField created in the getCMSFields method
-            //do not write after clearing the embargo (write happens automatically)
-            $savedDate = $this->EmbargoedUntilDate;
-            $this->clearEmbargo(false); // Clear all previous settings and re-apply them on save
-
-            if ($this->Embargo == 'Published') {
-                $this->embargoUntilPublished(false);
-            }
-            if ($this->Embargo == 'Indefinitely') {
-                $this->embargoIndefinitely(false);
-            }
-            if ($this->Embargo == DBDate::class) {
-                $this->embargoUntilDate($savedDate, false);
-            }
-        }
-
-        if (isset($this->Expiry)) {
-            if ($this->Expiry == DBDate::class) {
-                $this->expireAtDate($this->ExpireAtDate, false);
-            } else {
-                $this->clearExpiry(false);
-            } // Clear all previous settings
-        }
 
         // Set user fields
         if ($currentUserID = Member::currentUserID()) {
@@ -377,6 +332,36 @@ class DMSDocument extends File implements DMSDocumentInterface
                 $this->CreatedByID = $currentUserID;
             }
             $this->LastEditedByID = $currentUserID;
+        }
+
+        if ($this->TempFileID) {
+            $file = File::get()->byID($this->TempFileID);
+            $doNotCopy = $this->Config()->do_not_copy;
+            $onlyCopyIfEmpty = $this->Config()->only_copy_if_empty;
+            if($file && $file->exists()){
+                $cols = $file->toMap();
+                foreach($cols as $col => $val){
+                    if(in_array($col, $doNotCopy)){
+                        //do nothing
+                    }
+                    else if(in_array($col, $onlyCopyIfEmpty)){
+                        //check column in current record is empty before copying
+                        if(!$this->$col){
+                            //copy value from File record to DMSDocument record
+                            $this->$col = $val;
+                        }
+                    }
+                    else {
+                        //copy value from File record to DMSDocument record
+                        $this->$col = $val;
+                    }
+                }
+                $this->TempFileID = 0;
+                //delete the old file records
+                DB::query('DELETE FROM "File" WHERE "ID" =  ' . $file->ID);
+                DB::query('DELETE FROM "File_Live" WHERE "ID" =  ' . $file->ID);
+                DB::query('DELETE FROM "File_Versions" WHERE "RecordID" =  ' . $file->ID);
+            }
         }
     }
 
@@ -748,5 +733,29 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function replaceDocument($file) {
         return $file;
+    }
+
+    /**
+     * Return a title to use on the frontend, preferably the "title", otherwise the filename without it's numeric ID
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        if ($this->getField('Title')) {
+            return $this->getField('Title');
+        }
+        return $this->FilenameWithoutID;
+    }
+
+    /**
+     * Returns the Description field with HTML <br> tags added when there is a
+     * line break.
+     *
+     * @return string
+     */
+    public function getDescriptionWithLineBreak()
+    {
+        return nl2br($this->getField('Description'));
     }
 }
