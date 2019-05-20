@@ -87,14 +87,11 @@ class DMSSiteTreeExtension extends DataExtension
 
     public function onBeforeDelete()
     {
-        if (Versioned::get_stage() == 'Live') {
-            $existsOnOtherStage = !$this->owner->getIsDeletedFromStage();
-        } else {
-            $existsOnOtherStage = $this->owner->getExistsOnLive();
-        }
-
+        //@todo: UPGRADE: should we really delete the documents, even from the sets?
         // Only remove if record doesn't still exist on live stage.
-        if (!$existsOnOtherStage) {
+        if ($this->owner->isOnDraft() || $this->owner->isPublished()) {
+            //do nothing...
+        } else {
             $dmsDocuments = $this->owner->getAllDocuments();
             foreach ($dmsDocuments as $document) {
                 // If the document is only associated with one page, i.e. only associated with this page
