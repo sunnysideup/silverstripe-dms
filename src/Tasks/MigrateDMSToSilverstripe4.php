@@ -140,24 +140,31 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
                         $newFile->LastEditedByID = $row['LastEditedByID'];
                         $newFile->write();
 
+                        //in the obsolete one we already have a version 1. Above we write a file
+                        //so we end up with version 1
                         $sql = 'DELETE FROM "File_Versions" WHERE "RecordID" = '.$newFile->ID.' AND "Version" = 1;';
+                        $this->flushNow('... ... ... running - '.$sql);
                         DB::query($sql);
 
                         $sql = 'DELETE FROM "DMSDocument_Versions" WHERE "RecordID" = '.$newFile->ID.' AND "Version" = 1;';
+                        $this->flushNow('... ... ... running -'.$sql);
                         DB::query($sql);
 
+                        if(! $this->tableExists('_obsolete_DMSDocument_versions')) {
+                            user_error('Table _obsolete_DMSDocument_versions does not exist. Error', E_USER_ERROR);
 
-                        $versionRows = DB::query('SELECT "ID" FROM "_obsolete_DMSDocument_Versions" WHERE "DocumentID" = '.$row['ID']);
+                        }
+                        $versionRows = DB::query('SELECT "ID" FROM "_obsolete_DMSDocument_versions" WHERE "DocumentID" = '.$row['ID']);
                         foreach($versionRows as $versionRow) {
                             $this->flushNow('... adding row for DocumentID = '.$row['ID']);
                             $sql = '
                                 INSERT
                                 INTO "File_Versions" (
-                                    "RecordID",   "Version",           "Created",   "LastEdited", "Name",     "Title", "CanViewType", "CanEditType", "OriginalDMSDocumentID",                  "ClassName"
+                                    "RecordID",        "Version",           "Created",   "LastEdited", "Name",     "Title", "CanViewType", "CanEditType", "OriginalDMSDocumentID",                  "ClassName"
                                 )
                                 SELECT
-                                    '.$newFile->ID .', "VersionCounter", "Created", "LastEdited", "Filename", "Title", "CanViewType", "CanEditType", '.$row['ID'].' AS OriginalDMSDocumentID, \'Sunnysideup\\\\DMS\\\\Model\\\\DMSDocument\' as ClassNameInsert
-                                FROM "_obsolete_DMSDocument_Versions"
+                                    '.$newFile->ID .', "VersionCounter",    "Created",   "LastEdited", "Filename", "Title", "CanViewType", "CanEditType", '.$row['ID'].' AS OriginalDMSDocumentID, \'Sunnysideup\\\\DMS\\\\Model\\\\DMSDocument\' as ClassNameInsert
+                                FROM "_obsolete_DMSDocument_versions"
                                 WHERE "ID" = '.$versionRow['ID'].';';
                             echo $sql;
                             DB::query($sql);
@@ -176,7 +183,7 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
                                 )
                                 SELECT
                                     '.$id.' AS ID, '.$newFile->ID .', "VersionCounter", "Description", "ISBN", "ISSN", '.$newFile->CoverImageID.', '.$newFile->CreatedByID.', "VersionAuthorID"
-                                FROM "_obsolete_DMSDocument_Versions"
+                                FROM "_obsolete_DMSDocument_versions"
                                 WHERE "ID" = '.$versionRow['ID'].';';
                             DB::query($sql);
                         }
