@@ -111,7 +111,7 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
                 $myFolder = $this->_folderCache[$newFolderName];
                 $exists = File::get()->filter(['OriginalDMSDocumentIDFile' => $row['ID']])->count() ? true : false;
                 if($exists) {
-                    $this->flushNow('Skip');
+                    $this->flushNow('Skipping File with ID '.$row['ID']);
                     //do nothing
                 } else {
                     $this->flushNow('Doing: '.print_r($row, 1));
