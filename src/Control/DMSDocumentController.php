@@ -42,10 +42,12 @@ class DMSDocumentController extends Controller
     protected function getDocumentFromID($request)
     {
         $doc = null;
-
+        // todo: UPGRADE: rewrite!!
+        // $type = version / ID / OriginalDMSDocumentIDFile
         $id = Convert::raw2sql($request->param('ID'));
         if (strpos($id, 'version') === 0) {
             // Versioned document
+            // todo: UPGRADE: rewrite!!
             $id = $this->getDocumentIdFromSlug(str_replace('version', '', $id));
             $doc = DataObject::get_by_id(DMSDocument_versions::class, $id);
             $this->extend('updateVersionFromID', $doc, $request);
@@ -53,12 +55,12 @@ class DMSDocumentController extends Controller
             $slugID = $this->getDocumentIdFromSlug($id);
             // Normal document
             $doc = DataObject::get_by_id(DMSDocument::class, $slugID);
-            //backwards compatibility - fall back to OriginalDMSDocumentID
+            //backwards compatibility - fall back to OriginalDMSDocumentIDFile
             if(!$doc){
-                $doc = DMSDocument::get()->filter(['OriginalDMSDocumentID' => $slugID])->first();
+                $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $slugID])->first();
             }
-            $this->extend('updateDocumentFromID', $doc, $request);
         }
+        $this->extend('updateDocumentFromID', $doc, $request);
 
         return $doc;
     }

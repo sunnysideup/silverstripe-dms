@@ -18,7 +18,7 @@ class DMSDocumentTaxonomyExtension extends DataExtension
 
     private static $many_many_extraFields = [
         'Tags' => [
-            'OriginalDMSDocumentID' => 'Int'
+            'OriginalDMSDocumentIDDMSDocument_Tags' => 'Int'
         ]
     ];
 

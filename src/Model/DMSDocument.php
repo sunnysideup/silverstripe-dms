@@ -408,10 +408,10 @@ class DMSDocument extends File implements DMSDocumentInterface
     public function getLink()
     {
         $linkID = $this->ID;
-        if($this->OriginalDMSDocumentID){
-            $linkID = $this->OriginalDMSDocumentID;
+        if($this->OriginalDMSDocumentIDFile){
+            $linkID = $this->OriginalDMSDocumentIDFile;
         }
-        $urlSegment = sprintf('%d-%s', $linkID, URLSegmentFilter::create()->filter($this->getTitle()));
+        $urlSegment = sprintf('%d-%s', $linkID, '-ID-'.URLSegmentFilter::create()->filter($this->getTitle()));
         $result = Controller::join_links(Director::baseURL(), 'dmsdocument/' . $urlSegment);
         if (!$this->canView()) {
             $result = sprintf("javascript:alert('%s')", $this->getPermissionDeniedReason());

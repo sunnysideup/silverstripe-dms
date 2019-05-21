@@ -14,11 +14,11 @@ class FileExtension extends DataExtension
 {
 
     private static $db = [
-        'OriginalDMSDocumentID' => 'Int'
+        'OriginalDMSDocumentIDFile' => 'Int'
     ];
 
     private static $indexes = [
-        'OriginalDMSDocumentID' => true
+        'OriginalDMSDocumentIDFile' => true
     ];
 
 }
