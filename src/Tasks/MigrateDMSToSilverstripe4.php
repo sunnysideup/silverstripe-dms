@@ -275,7 +275,7 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
     {
         $queries = [];
 
-        $tablesAndFields = $this->Config()->my_table_and_field;
+        $tablesAndFields = $this->Config()->my_table_and_field_for_post_queries;
         foreach($tablesAndFields as $table => $field) {
             $queries = array_merge(
                 $queries,
