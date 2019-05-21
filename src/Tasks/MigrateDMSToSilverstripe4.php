@@ -297,7 +297,7 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
         $baseTable = str_replace('_Live', '', $baseTable);
         $baseTable = str_replace('_Versions', '', $baseTable);
         $originalDocumentIDField = 'OriginalDMSDocumentID'.$baseTable;
-        if(!$this->fieldExists($originalDocumentIDField)) {
+        if(!$this->fieldExists($table, $originalDocumentIDField)) {
             $this->flushNow('Error: could not find the following field: '.$originalDocumentIDField.' in '.$table);
             die('');
         }
