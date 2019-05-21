@@ -8,10 +8,8 @@
 //6. delete DMS Document fields, keeping the ones that need to be kept.
 //7. move DMS Document to its own location
 //
-//@todo: UPGRADE: remove after upgrade
 
 namespace Sunnysideup\DMS\Tasks;
-
 
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
@@ -33,6 +31,14 @@ use Sunnysideup\MigrateData\Tasks\MigrateDataTask;
 
 class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
 {
+
+    /**
+     * list of tables => fields that need migrating
+     * 'MyPageLongFormDocument' =>  'DownloadFile'
+     * these tables also need to have a OriginalDMSDocumentID[TableName] field
+     *@var array
+     */
+    private static $my_table_and_field_for_post_queries = [];
 
     public static function flush()
     {
@@ -268,24 +274,14 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
     protected function getPostQueries()
     {
         $queries = [];
-        // .
-        $queries = array_merge(
-            $queries,
-            $this->getPostQueriesBuilder('CertifiersRegisterIndexPage', 'JsonFile')
-        );
-        $queries = array_merge(
-            $queries,
-            $this->getPostQueriesBuilder('ElementDocumentSet_Documents', 'DMSDocument')
-        );
-        $queries = array_merge(
-            $queries,
-            $this->getPostQueriesBuilder('LongFormDocument', 'DownloadFile')
-        );
 
-        $queries = array_merge(
-            $queries,
-            $this->getPostQueriesBuilder('DMSDocument_Tags', 'DMSDocument')
-        );
+        $tablesAndFields = $this->Config()->my_table_and_field;
+        foreach($tablesAndFields as $table => $field) {
+            $queries = array_merge(
+                $queries,
+                $this->getPostQueriesBuilder($table, $field)
+            );
+        }
 
         return $queries;
     }
@@ -301,6 +297,10 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
         $baseTable = str_replace('_Live', '', $baseTable);
         $baseTable = str_replace('_Versions', '', $baseTable);
         $originalDocumentIDField = 'OriginalDMSDocumentID'.$baseTable;
+        if(!$this->fieldExists($originalDocumentIDField)) {
+            $this->flushNow('Error: could not find the following field: '.$originalDocumentIDField.' in '.$table);
+            die('');
+        }
         if(!$this->fieldExists($table, $originalDocumentIDField)) {
             $this->flushNow('Error: could not find the following field: '.$table.'.'.$originalDocumentIDField.'');
             die('');
