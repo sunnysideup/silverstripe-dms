@@ -135,15 +135,16 @@ class DMSDocumentController extends Controller
             if($oldCaseVersioning) {
                 //use $id to find version
             } else {
+                //new school approach
                 //use $id and $versionID to find version.
-
             }
             $this->extend('updateVersionFromID', $doc, $request);
         } elseif($id && $isLegacyLink) {
+            //backwards compatibility - fall back to OriginalDMSDocumentIDFile
             $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $id])->first();
             $this->extend('updateDocumentFromID', $doc, $request);
-            //backwards compatibility - fall back to OriginalDMSDocumentIDFile
         } elseif($id) {
+            //new school approach
             $doc = DataObject::get_by_id(DMSDocument::class, $id);
             $this->extend('updateFileFromID', $doc, $request);
         } else {
