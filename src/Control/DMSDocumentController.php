@@ -98,27 +98,6 @@ class DMSDocumentController extends Controller
 
 
     /**
-     * @param string $path File path
-     * @param string $mime File mime type
-     * @param string $name File name
-     * @param string $disposition Content dispositon
-     */
-    protected function sendFile($path, $mime, $name, $disposition)
-    {
-        header('Content-Type: ' . $mime);
-        header('Content-Length: ' . filesize($path), null);
-        if (!empty($mime) && $mime != "text/html") {
-            header('Content-Disposition: '.$disposition.'; filename="'.addslashes($name).'"');
-        }
-        header('Content-transfer-encoding: 8bit');
-        header('Expires: 0');
-        header('Pragma: cache');
-        header('Cache-Control: private');
-        flush();
-        readfile($path);
-        exit;
-    }
-    /**
      * Returns the document object from the request object's ID parameter.
      * Returns null, if no document found
      *
@@ -128,28 +107,47 @@ class DMSDocumentController extends Controller
     protected function getDocumentFromID($request)
     {
         $doc = null;
-        // todo: UPGRADE: rewrite!!
-        // $type = version / ID / OriginalDMSDocumentIDFile
+
         $id = Convert::raw2sql($request->param('ID'));
-        //special case legacy.
-        if (strpos($id, 'version') === 0) {
-            $versionID = $this->getDocumentIdFromSlug(str_replace('version', '', $id));
-        } else {
-            $versionID = intval($this->request->getVar('versionid'));
-            $fileID = intval($this->request->getVar('fileid'));
-            $slugID = $this->getDocumentIdFromSlug($id);
+        $versionID = intval(Convert::raw2sql($request->param('OtherID')));
+
+        $isLegacyLink = true;
+        //new scenario with version and id
+        if($versionID === 'latest') {
+            $versionID = 0;
+            $isLegacyLink = false;
         }
-        if ($versionID) {
-            //todo: UPGRADE: getting versionID
-            //get DOC from slug
-            $this->extend('updateVersionFromID', $doc, $request);
-        } elseif($fileID) {
-            $doc = DataObject::get_by_id(DMSDocument::class, $fileID);
-            $this->extend('updateFileFromID', $doc, $request);
-            //backwards compatibility - fall back to OriginalDMSDocumentIDFile
+
+        $oldCaseVersioning = false;
+
+        if (strpos($id, 'version') === 0) {
+            //special legacy case
+            $id = str_replace('version', '', $id);
+            $oldCaseVersioning = true;
         } else {
-            $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $slugID])->first();
+            //standard case.
+        }
+
+        $id = $this->getDocumentIdFromSlug($id);
+
+        if ($versionID || $oldCaseVersioning) {
+            //todo: UPGRADE: getting versionID
+            if($oldCaseVersioning) {
+                //use $id to find version
+            } else {
+                //use $id and $versionID to find version.
+
+            }
+            $this->extend('updateVersionFromID', $doc, $request);
+        } elseif($id && $isLegacyLink) {
+            $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $id])->first();
             $this->extend('updateDocumentFromID', $doc, $request);
+            //backwards compatibility - fall back to OriginalDMSDocumentIDFile
+        } elseif($id) {
+            $doc = DataObject::get_by_id(DMSDocument::class, $id);
+            $this->extend('updateFileFromID', $doc, $request);
+        } else {
+            //nothing!
         }
 
         //more options
@@ -174,4 +172,25 @@ class DMSDocumentController extends Controller
         throw new InvalidArgumentException($slug . ' is not a valid DMSDocument URL');
     }
 
+    /**
+     * @param string $path File path
+     * @param string $mime File mime type
+     * @param string $name File name
+     * @param string $disposition Content dispositon
+     */
+    protected function sendFile($path, $mime, $name, $disposition)
+    {
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . filesize($path), null);
+        if (!empty($mime) && $mime != "text/html") {
+            header('Content-Disposition: '.$disposition.'; filename="'.addslashes($name).'"');
+        }
+        header('Content-transfer-encoding: 8bit');
+        header('Expires: 0');
+        header('Pragma: cache');
+        header('Cache-Control: private');
+        flush();
+        readfile($path);
+        exit;
+    }
 }
