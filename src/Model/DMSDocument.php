@@ -397,25 +397,24 @@ class DMSDocument extends File implements DMSDocumentInterface
         return "/resources/vendor/sunnysideup/dms/client/images/app_icons/{$ext}_32.png";
     }
 
-    public function Link(){
-        return $this->getLink();
+    public function Link($versionID = 'latest'){
+        return $this->getLink($versionID);
     }
 
     /**
      * Returns a link to download this DMSDocument from the DMS store
      * @return String
      */
-    public function getLink()
+    public function getLink($versionID = 'latest')
     {
         $linkID = $this->ID;
-        if($this->OriginalDMSDocumentID){
-            $linkID = $this->OriginalDMSDocumentID;
+        if($this->OriginalDMSDocumentIDFile){
+            $linkID = $this->OriginalDMSDocumentIDFile;
+            $versionID = '';
         }
         $urlSegment = sprintf('%d-%s', $linkID, URLSegmentFilter::create()->filter($this->getTitle()));
-        $result = Controller::join_links(Director::baseURL(), 'dmsdocument/' . $urlSegment);
-        if (!$this->canView()) {
-            $result = sprintf("javascript:alert('%s')", $this->getPermissionDeniedReason());
-        }
+        
+        $result = Controller::join_links(Director::baseURL(), 'dmsdocument' , $urlSegment, $versionID);
 
         $this->extend('updateGetLink', $result);
 
