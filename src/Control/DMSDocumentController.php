@@ -32,55 +32,6 @@ class DMSDocumentController extends Controller
         parent::init();
     }
 
-    /**
-     * Returns the document object from the request object's ID parameter.
-     * Returns null, if no document found
-     *
-     * @param  SS_HTTPRequest $request
-     * @return DMSDocument|null
-     */
-    protected function getDocumentFromID($request)
-    {
-        $doc = null;
-        // todo: UPGRADE: rewrite!!
-        // $type = version / ID / OriginalDMSDocumentIDFile
-        $id = Convert::raw2sql($request->param('ID'));
-        if (strpos($id, 'version') === 0) {
-            // Versioned document
-            // todo: UPGRADE: rewrite!!
-            $id = $this->getDocumentIdFromSlug(str_replace('version', '', $id));
-            $doc = DataObject::get_by_id(DMSDocument_versions::class, $id);
-            $this->extend('updateVersionFromID', $doc, $request);
-        } else {
-            $slugID = $this->getDocumentIdFromSlug($id);
-            // Normal document
-            $doc = DataObject::get_by_id(DMSDocument::class, $slugID);
-            //backwards compatibility - fall back to OriginalDMSDocumentIDFile
-            if(!$doc){
-                $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $slugID])->first();
-            }
-        }
-        $this->extend('updateDocumentFromID', $doc, $request);
-
-        return $doc;
-    }
-
-    /**
-     * Get a document's ID from a "friendly" URL slug containing a numeric ID and slugged title
-     *
-     * @param  string $slug
-     * @return int
-     * @throws InvalidArgumentException if an invalid format is provided
-     */
-    protected function getDocumentIdFromSlug($slug)
-    {
-        $parts = (array) sscanf($slug, '%d-%s');
-        $id = array_shift($parts);
-        if (is_numeric($id)) {
-            return (int) $id;
-        }
-        throw new InvalidArgumentException($slug . ' is not a valid DMSDocument URL');
-    }
 
     /**
      * Access the file download without redirecting user, so we can block direct
@@ -145,6 +96,7 @@ class DMSDocumentController extends Controller
         $this->httpError(404, 'This asset does not exist.');
     }
 
+
     /**
      * @param string $path File path
      * @param string $mime File mime type
@@ -166,4 +118,60 @@ class DMSDocumentController extends Controller
         readfile($path);
         exit;
     }
+    /**
+     * Returns the document object from the request object's ID parameter.
+     * Returns null, if no document found
+     *
+     * @param  SS_HTTPRequest $request
+     * @return DMSDocument|null
+     */
+    protected function getDocumentFromID($request)
+    {
+        $doc = null;
+        // todo: UPGRADE: rewrite!!
+        // $type = version / ID / OriginalDMSDocumentIDFile
+        $id = Convert::raw2sql($request->param('ID'));
+        //special case legacy.
+        if (strpos($id, 'version') === 0) {
+            $versionID = $this->getDocumentIdFromSlug(str_replace('version', '', $id));
+        } else {
+            $versionID = intval($this->request->getVar('versionid'));
+            $fileID = intval($this->request->getVar('fileid'));
+            $slugID = $this->getDocumentIdFromSlug($id);
+        }
+        if ($versionID) {
+            //todo: UPGRADE: getting versionID
+            //get DOC from slug
+            $this->extend('updateVersionFromID', $doc, $request);
+        } elseif($fileID) {
+            $doc = DataObject::get_by_id(DMSDocument::class, $fileID);
+            $this->extend('updateFileFromID', $doc, $request);
+            //backwards compatibility - fall back to OriginalDMSDocumentIDFile
+        } else {
+            $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $slugID])->first();
+            $this->extend('updateDocumentFromID', $doc, $request);
+        }
+
+        //more options
+
+        return $doc;
+    }
+
+    /**
+     * Get a document's ID from a "friendly" URL slug containing a numeric ID and slugged title
+     *
+     * @param  string $slug
+     * @return int
+     * @throws InvalidArgumentException if an invalid format is provided
+     */
+    protected function getDocumentIdFromSlug($slug)
+    {
+        $parts = (array) sscanf($slug, '%d-%s');
+        $id = array_shift($parts);
+        if (is_numeric($id)) {
+            return (int) $id;
+        }
+        throw new InvalidArgumentException($slug . ' is not a valid DMSDocument URL');
+    }
+
 }
