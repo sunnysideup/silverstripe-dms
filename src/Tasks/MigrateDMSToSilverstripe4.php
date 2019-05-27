@@ -293,61 +293,71 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
             $this->flushNow('Error: could not find the following table: '.$table);
             die('');
         }
+        //clean table
         $baseTable = $table;
         $baseTable = str_replace('_Live', '', $baseTable);
         $baseTable = str_replace('_Versions', '', $baseTable);
         $originalDocumentIDField = 'OriginalDMSDocumentID'.$baseTable;
-        if(!$this->fieldExists($table, $originalDocumentIDField)) {
+        if(! $this->fieldExists($table, $originalDocumentIDField)) {
             $this->flushNow('Error: could not find the following field: '.$originalDocumentIDField.' in '.$table);
             die('');
         }
-        if(!$this->fieldExists($table, $originalDocumentIDField)) {
-            $this->flushNow('Error: could not find the following field: '.$table.'.'.$originalDocumentIDField.'');
-            die('');
-        }
-        if(!$this->fieldExists($table, $field)) {
+        if(! $this->fieldExists($table, $field)) {
             $this->flushNow('Error: could not find the following field: '.$table.'.'.$field.'');
             die('');
         }
-        return [
-            //set the OriginalDMSDocumentID if that has not been set yet ...
-            '
-                UPDATE "'.$table.'"
-                SET "'.$table.'"."'.$originalDocumentIDField.'" = "'.$table.'"."'.$field.'"
-                WHERE
-                    (
-                        "'.$table.'"."'.$originalDocumentIDField.'" = 0 OR
-                        "'.$table.'"."'.$originalDocumentIDField.'" IS NULL
-                    ) AND (
-                        "'.$table.'"."'.$field.'" > 0 AND
-                        "'.$table.'"."'.$field.'" IS NOT NULL
-                    );
-            ',
+        $queries = [];
+        foreach(['', '_Live', '_Versions'] as $tableExtensions) {
+            $fullTable = $table.$tableExtensions;
+            if($this->tableExists($fullTable)) {
+                $queries[] =
 
-            //set the field to zero in case there is a DMS Link
-            //but the DMS link can not be made
-            '
-                UPDATE "'.$table.'"
-                LEFT JOIN "File"
-                    ON "File"."OriginalDMSDocumentIDFile" = "'.$table.'"."'.$originalDocumentIDField.'"
-                SET "'.$table.'"."'.$field.'" = 0
-                WHERE
-                    "'.$table.'"."'.$originalDocumentIDField.'" > 0 AND
-                    "'.$table.'"."'.$originalDocumentIDField.'" IS NOT NULL AND
-                    "File"."ID" IS NULL;
-            ',
+                    //set the OriginalDMSDocumentID if that has not been set yet ...
+                    '
+                        UPDATE "'.$fullTable.'"
+                        SET "'.$fullTable.'"."'.$originalDocumentIDField.'" = "'.$fullTable.'"."'.$field.'"
+                        WHERE
+                            (
+                                "'.$fullTable.'"."'.$originalDocumentIDField.'" = 0 OR
+                                "'.$fullTable.'"."'.$originalDocumentIDField.'" IS NULL
+                            ) AND (
+                                "'.$fullTable.'"."'.$field.'" > 0 AND
+                                "'.$fullTable.'"."'.$field.'" IS NOT NULL
+                            );
+                    ';
+                $queries[] =
 
-            //update to new value ... where there is a DMSDocument connection
-            '
-                UPDATE "'.$table.'"
-                    INNER JOIN "File"
-                        ON "File"."OriginalDMSDocumentIDFile" = "'.$table.'"."'.$originalDocumentIDField.'"
-                SET "'.$table.'"."'.$field.'" = "File"."ID"
-                WHERE
-                    "'.$table.'"."'.$originalDocumentIDField.'" > 0 AND
-                    "'.$table.'"."'.$originalDocumentIDField.'" IS NOT NULL;
-            '
-        ];
+                    //set the field to zero in case there is a DMS Link
+                    //but the DMS link can not be made
+                    '
+                        UPDATE "'.$fullTable.'"
+                        LEFT JOIN "File"
+                            ON "File"."OriginalDMSDocumentIDFile" = "'.$fullTable.'"."'.$originalDocumentIDField.'"
+                        SET "'.$fullTable.'"."'.$field.'" = 0
+                        WHERE
+                            "'.$fullTable.'"."'.$originalDocumentIDField.'" > 0 AND
+                            "'.$fullTable.'"."'.$originalDocumentIDField.'" IS NOT NULL AND
+
+                            "File"."ID" IS NULL;
+                    ';
+                $queries[] =
+
+                    //update to new value ... where there is a DMSDocument connection
+                    '
+                        UPDATE "'.$fullTable.'"
+                            INNER JOIN "File"
+                                ON "File"."OriginalDMSDocumentIDFile" = "'.$fullTable.'"."'.$originalDocumentIDField.'"
+                        SET "'.$fullTable.'"."'.$field.'" = "File"."ID"
+                        WHERE
+                            "'.$fullTable.'"."'.$originalDocumentIDField.'" > 0 AND
+                            "'.$fullTable.'"."'.$originalDocumentIDField.'" IS NOT NULL;
+                    ';
+            } else {
+                $this->flushNow('Skipping '.$fullTable.' as this table does not exist.');
+            }
+        }
+
+        return $queries;
     }
 
     public function setMainDMSFolder(){
