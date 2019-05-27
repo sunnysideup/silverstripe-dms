@@ -56,11 +56,15 @@ use Sunnysideup\DMS\Cms\DMSGridFieldEditButton;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
+use SilverStripe\Forms\TabSet;
+use SilverStripe\Forms\Tab;
 use SilverStripe\Core\Convert;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\ORM\DataObject;
 use Sunnysideup\DMS\Interfaces\DMSDocumentInterface;
+use Sunnysideup\DMS\Admin\DMSDocumentAdmin;
 use SilverStripe\Core\Manifest\ModuleLoader;
+use SilverStripe\Core\Injector\Injector;
 
 /**
  * @package dms
@@ -178,119 +182,149 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function getCMSFields()
     {
-        $fields = new FieldList();
+
         $siteConfig = SiteConfig::current_site_config();
+        $fieldsForMain = [];
+        $fieldsForDetails = [];
+        $fieldsForTags = [];
+        $fieldsForVersions = [];
+        $fieldsForRelatedDocs = [];
+        $fieldsForRelated = [];
+        $fieldsForPermissions = [];
+
         if(!$siteConfig->DMSFolderID){
-            $fields->add(
+            $fieldsForMain[] = (
                 LiteralField::create(
                     'DMSFolderMessage',
                     '<h2>You need to <a href="/admin/settings/" target="_blank">set</a> the folder for the DMS documents before you can create a DMS document.'
                 )
             );
-            return $fields;
-        }
+        } else {
 
-        if(!$this->ID){
-            $uploadField = new UploadField('TempFile', 'File');
-            $uploadField->setAllowedMaxFileNumber(1);
-            $fields->add($uploadField);
-            return $fields;
-        }
-        else {
+            if(!$this->ID){
+                $uploadField = new UploadField('TempFile', 'File');
+                $uploadField->setAllowedMaxFileNumber(1);
+                $fieldsForMain[] = $uploadField;
+            }
+            else {
 
-            $fields = new FieldList();  //don't use the automatic scaffolding, it is slow and unnecessary here
+                $infoFields = $this->getFieldsForFile();
+                $fieldsForMain[] = $infoFields;
 
-            $infoFields = $this->getFieldsForFile();
-            $fields->add($infoFields);
+                $uploadField = new UploadField('TempFile', 'Replace Current File');
+                $uploadField->setAllowedMaxFileNumber(1);
+                $fieldsForDetails[] = $uploadField;
 
-            $uploadField = new UploadField('TempFile', 'Replace Current File');
-            $uploadField->setAllowedMaxFileNumber(1);
-            $fields->add($uploadField);
+                $fieldsForDetails[] = TextField::create('Title', _t('DMSDocument.TITLE', 'Title'));
+                $fieldsForDetails[] = TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description'));
 
-            $fields->add(TextField::create('Title', _t('DMSDocument.TITLE', 'Title')));
-            $fields->add(TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description')));
+                if($this->hasExtension('Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension')){
+                    $tags = $this->getAllTagsMap();
+                    $tagField = ListboxField::create('Tags', _t('DMSDocumentTaxonomyExtension.TAGS', 'Tags'))
+                        ->setSource($tags);
 
-            if($this->hasExtension('Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension')){
-                $tags = $this->getAllTagsMap();
-                $tagField = ListboxField::create('Tags', _t('DMSDocumentTaxonomyExtension.TAGS', 'Tags'))
-                    ->setSource($tags);
+                    if (empty($tags)) {
+                        $tagField->setAttribute('data-placeholder', _t('DMSDocumentTaxonomyExtension.NOTAGS', 'No tags found'));
+                    }
 
-                if (empty($tags)) {
-                    $tagField->setAttribute('data-placeholder', _t('DMSDocumentTaxonomyExtension.NOTAGS', 'No tags found'));
+                    $fieldsForTags[] = $tagField;
                 }
 
-                $fields->add($tagField);
-            }
+                $coverImageField = UploadField::create('CoverImage', _t('DMSDocument.COVERIMAGE', 'Cover Image'));
+                $coverImageField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
+                $coverImageField->setAllowedMaxFileNumber(1);
+                $fieldsForDetails[] = $coverImageField;
 
-            $coverImageField = UploadField::create('CoverImage', _t('DMSDocument.COVERIMAGE', 'Cover Image'));
-            $coverImageField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
-            $coverImageField->setAllowedMaxFileNumber(1);
-            $fields->add($coverImageField);
-
-            $gridFieldConfig = GridFieldConfig::create()->addComponents(
-                new GridFieldToolbarHeader(),
-                new GridFieldSortableHeader(),
-                new GridFieldDataColumns(),
-                new GridFieldPaginator(30),
-                //new GridFieldEditButton(),
-                new GridFieldDetailForm()
-            );
-
-            $gridFieldConfig->getComponentByType(GridFieldDataColumns::class)
-                ->setDisplayFields(array(
-                    'Title' => 'Title',
-                    'ClassName' => 'Page Type',
-                    'ID' => 'Page ID'
-                ))
-                ->setFieldFormatting(array(
-                    'Title' => sprintf(
-                        '<a class=\"cms-panel-link\" href=\"%s/$ID\">$Title</a>',
-                        singleton(CMSPageEditController::class)->Link('show')
-                    )
-                ));
-
-            $pagesGrid = GridField::create(
-                'Pages',
-                _t('DMSDocument.RelatedPages', 'Related Pages'),
-                $this->getRelatedPages(),
-                $gridFieldConfig
-            );
-
-            $fields->add(HeaderField::create('PagesHeader', 'Usage'));
-            $fields->add($pagesGrid);
-
-            if ($this->canEdit()) {
-                $fields->add($this->getRelatedDocumentsGridField());
-
-
-
-
-                $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
+                $gridFieldConfig = GridFieldConfig::create()->addComponents(
                     new GridFieldToolbarHeader(),
                     new GridFieldSortableHeader(),
                     new GridFieldDataColumns(),
-                    new GridFieldPaginator(30)
+                    new GridFieldPaginator(30),
+                    //new GridFieldEditButton(),
+                    new GridFieldDetailForm()
                 );
 
-                $versionsGrid =  GridField::create(
-                    'Versions',
-                    _t('DMSDocument.Versions', 'Versions'),
-                    Versioned::get_all_versions(DMSDocument::class, $this->ID),
-                    $versionsGridFieldConfig
+                $gridFieldConfig->getComponentByType(GridFieldDataColumns::class)
+                    ->setDisplayFields(array(
+                        'Title' => 'Title',
+                        'ClassName' => 'Page Type',
+                        'ID' => 'Page ID'
+                    ))
+                    ->setFieldFormatting(array(
+                        'Title' => sprintf(
+                            '<a class=\"cms-panel-link\" href=\"%s/$ID\">$Title</a>',
+                            singleton(CMSPageEditController::class)->Link('show')
+                        )
+                    ));
+
+                $pagesGrid = GridField::create(
+                    'Pages',
+                    _t('DMSDocument.RelatedPages', 'Related Pages'),
+                    $this->getRelatedPages(),
+                    $gridFieldConfig
                 );
 
-                $fields->add($versionsGrid);
+                $fieldsForRelated[] = $pagesGrid;
 
-                $fields->add(HeaderField::create('PermissionsHeader', 'Permissions'));
-                $fields->add($this->getPermissionsActionPanel());
+                if ($this->canEdit()) {
+                    $fieldsForRelatedDocs[] = $this->getRelatedDocumentsGridField();
+
+                    $versionsGridFieldConfig = GridFieldConfig::create()->addComponents(
+                        new GridFieldToolbarHeader(),
+                        new GridFieldSortableHeader(),
+                        new GridFieldDataColumns(),
+                        new GridFieldPaginator(30)
+                    );
+
+                    $versionsGrid =  GridField::create(
+                        'Versions',
+                        _t('DMSDocument.Versions', 'Versions'),
+                        Versioned::get_all_versions(DMSDocument::class, $this->ID),
+                        $versionsGridFieldConfig
+                    );
+
+                    $fieldsForVersions[] = $versionsGrid;
+
+                    $fieldsForPermissions[] = $this->getPermissionsActionPanel();
 
 
 
+                }
             }
-            $this->extend('updateCMSFields', $fields);
-
-            return $fields;
         }
+
+        $fields = new FieldList(
+            $rootTab = new TabSet(
+                "Root",
+                $tabBehaviour = new Tab(
+                    'Main'
+                )
+            )
+        );
+        foreach($fieldsForMain as $field) {
+            $fields->addFieldToTab('Root.Main', $field);
+        }
+        foreach($fieldsForDetails as $field) {
+            $fields->addFieldToTab('Root.EditDetails', $field);
+        }
+        foreach($fieldsForTags as $field) {
+            $fields->addFieldToTab('Root.Tags', $field);
+        }
+        foreach($fieldsForVersions as $field) {
+            $fields->addFieldToTab('Root.Versions', $field);
+        }
+        foreach($fieldsForRelatedDocs as $field) {
+            $fields->addFieldToTab('Root.RelatedDocs', $field);
+        }
+        foreach($fieldsForRelated as $field) {
+            $fields->addFieldToTab('Root.Usage', $field);
+        }
+        foreach($fieldsForPermissions as $field) {
+            $fields->addFieldToTab('Root.Permissions', $field);
+        }
+        $this->extend('updateCMSFields', $fields);
+
+        return $fields;
 
     }
 
@@ -413,7 +447,7 @@ class DMSDocument extends File implements DMSDocumentInterface
             $versionID = '';
         }
         $urlSegment = sprintf('%d-%s', $linkID, URLSegmentFilter::create()->filter($this->getTitle()));
-        
+
         $result = Controller::join_links(Director::baseURL(), 'dmsdocument' , $urlSegment, $versionID);
 
         $this->extend('updateGetLink', $result);
@@ -709,4 +743,27 @@ class DMSDocument extends File implements DMSDocumentInterface
     {
         return nl2br($this->getField('Description'));
     }
+
+
+    /**
+     * DataObject edit permissions
+     * @param Member $member
+     * @return boolean
+     */
+    public function canEdit($member = null)
+    {
+        if(Controller::curr() instanceof DMSDocumentAdmin) {
+            return parent::canEdit($member);
+        } else {
+            return false;
+        }
+    }
+
+    public function CMSEditLink()
+    {
+        $editor = Injector::inst()->get(DMSDocumentAdmin::class);
+        $cleanClass = str_replace('\\', '-', self::class);
+        return $editor->Link('/'.$cleanClass.'/EditForm/field/'.$cleanClass.'/item/'.$this->ID.'/edit');
+    }
+
 }
