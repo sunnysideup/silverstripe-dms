@@ -192,7 +192,7 @@ class DMSDocument extends File implements DMSDocumentInterface
         $fieldsForRelated = [];
         $fieldsForPermissions = [];
 
-        if(!$siteConfig->DMSFolderID){
+        if (!$siteConfig->DMSFolderID) {
             $fieldsForMain[] = (
                 LiteralField::create(
                     'DMSFolderMessage',
@@ -200,14 +200,11 @@ class DMSDocument extends File implements DMSDocumentInterface
                 )
             );
         } else {
-
-            if(!$this->ID){
+            if (!$this->ID) {
                 $uploadField = new UploadField('TempFile', 'File');
                 $uploadField->setAllowedMaxFileNumber(1);
                 $fieldsForMain[] = $uploadField;
-            }
-            else {
-
+            } else {
                 $infoFields = $this->getFieldsForFile();
                 $fieldsForMain[] = $infoFields;
 
@@ -218,7 +215,7 @@ class DMSDocument extends File implements DMSDocumentInterface
                 $fieldsForDetails[] = TextField::create('Title', _t('DMSDocument.TITLE', 'Title'));
                 $fieldsForDetails[] = TextareaField::create('Description', _t('DMSDocument.DESCRIPTION', 'Description'));
 
-                if($this->hasExtension('Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension')){
+                if ($this->hasExtension('Sunnysideup\DMS\Extensions\DMSDocumentTaxonomyExtension')) {
                     $tags = $this->getAllTagsMap();
                     $tagField = ListboxField::create('Tags', _t('DMSDocumentTaxonomyExtension.TAGS', 'Tags'))
                         ->setSource($tags);
@@ -286,9 +283,6 @@ class DMSDocument extends File implements DMSDocumentInterface
                     $fieldsForVersions[] = $versionsGrid;
 
                     $fieldsForPermissions[] = $this->getPermissionsActionPanel();
-
-
-
                 }
             }
         }
@@ -301,31 +295,30 @@ class DMSDocument extends File implements DMSDocumentInterface
                 )
             )
         );
-        foreach($fieldsForMain as $field) {
+        foreach ($fieldsForMain as $field) {
             $fields->addFieldToTab('Root.Main', $field);
         }
-        foreach($fieldsForDetails as $field) {
+        foreach ($fieldsForDetails as $field) {
             $fields->addFieldToTab('Root.EditDetails', $field);
         }
-        foreach($fieldsForTags as $field) {
+        foreach ($fieldsForTags as $field) {
             $fields->addFieldToTab('Root.Tags', $field);
         }
-        foreach($fieldsForVersions as $field) {
+        foreach ($fieldsForVersions as $field) {
             $fields->addFieldToTab('Root.Versions', $field);
         }
-        foreach($fieldsForRelatedDocs as $field) {
+        foreach ($fieldsForRelatedDocs as $field) {
             $fields->addFieldToTab('Root.RelatedDocs', $field);
         }
-        foreach($fieldsForRelated as $field) {
+        foreach ($fieldsForRelated as $field) {
             $fields->addFieldToTab('Root.Usage', $field);
         }
-        foreach($fieldsForPermissions as $field) {
+        foreach ($fieldsForPermissions as $field) {
             $fields->addFieldToTab('Root.Permissions', $field);
         }
         $this->extend('updateCMSFields', $fields);
 
         return $fields;
-
     }
 
 
@@ -385,27 +378,25 @@ class DMSDocument extends File implements DMSDocumentInterface
             $file = File::get()->byID($this->TempFileID);
             $doNotCopy = $this->Config()->do_not_copy;
             $onlyCopyIfEmpty = $this->Config()->only_copy_if_empty;
-            if($file && $file->exists()){
+            if ($file && $file->exists()) {
                 $cols = $file->toMap();
-                foreach($cols as $col => $val){
-                    if(in_array($col, $doNotCopy)){
+                foreach ($cols as $col => $val) {
+                    if (in_array($col, $doNotCopy)) {
                         //do nothing
-                    }
-                    else if(in_array($col, $onlyCopyIfEmpty)){
+                    } elseif (in_array($col, $onlyCopyIfEmpty)) {
                         //check column in current record is empty before copying
-                        if(!$this->$col){
+                        if (!$this->$col) {
                             //copy value from File record to DMSDocument record
                             $this->$col = $val;
                         }
-                    }
-                    else {
+                    } else {
                         //copy value from File record to DMSDocument record
                         $this->$col = $val;
                     }
                 }
                 $this->TempFileID = 0;
                 $siteConfig = SiteConfig::current_site_config();
-                if($siteConfig->DMSFolder() && $siteConfig->DMSFolder()->exists()){
+                if ($siteConfig->DMSFolder() && $siteConfig->DMSFolder()->exists()) {
                     $this->ParentID = $siteConfig->DMSFolderID;
                 }
                 //delete the old file records
@@ -431,7 +422,8 @@ class DMSDocument extends File implements DMSDocumentInterface
         return "/resources/vendor/sunnysideup/dms/client/images/app_icons/{$ext}_32.png";
     }
 
-    public function Link($versionID = 'latest'){
+    public function Link($versionID = 'latest')
+    {
         return $this->getLink($versionID);
     }
 
@@ -442,13 +434,13 @@ class DMSDocument extends File implements DMSDocumentInterface
     public function getLink($versionID = 'latest')
     {
         $linkID = $this->ID;
-        if($this->OriginalDMSDocumentIDFile){
+        if ($this->OriginalDMSDocumentIDFile) {
             $linkID = $this->OriginalDMSDocumentIDFile;
             $versionID = '';
         }
         $urlSegment = sprintf('%d-%s', $linkID, URLSegmentFilter::create()->filter($this->getTitle()));
 
-        $result = Controller::join_links(Director::baseURL(), 'dmsdocument' , $urlSegment, $versionID);
+        $result = Controller::join_links(Director::baseURL(), 'dmsdocument', $urlSegment, $versionID);
 
         $this->extend('updateGetLink', $result);
 
@@ -716,7 +708,8 @@ class DMSDocument extends File implements DMSDocumentInterface
      * @param $file File object, or String that is path to a file to store
      * @return DMSDocumentInstance Document object that we replaced the file in
      */
-    public function replaceDocument($file) {
+    public function replaceDocument($file)
+    {
         return $file;
     }
 
@@ -752,7 +745,7 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function canEdit($member = null)
     {
-        if(Controller::curr() instanceof DMSDocumentAdmin) {
+        if (Controller::curr() instanceof DMSDocumentAdmin) {
             return parent::canEdit($member);
         } else {
             return false;
@@ -765,5 +758,4 @@ class DMSDocument extends File implements DMSDocumentInterface
         $cleanClass = str_replace('\\', '-', self::class);
         return $editor->Link('/'.$cleanClass.'/EditForm/field/'.$cleanClass.'/item/'.$this->ID.'/edit');
     }
-
 }

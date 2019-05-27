@@ -8,7 +8,6 @@ use SilverStripe\Core\Config\Config;
 use Sunnysideup\DMS\Extensions\DMSTaxonomyTypeExtension;
 use SilverStripe\ORM\DataExtension;
 
-
 class DMSDocumentTaxonomyExtension extends DataExtension
 {
 

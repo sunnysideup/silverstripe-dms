@@ -7,7 +7,6 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataExtension;
 
-
 /**
  * Settings class to define site specific settings.
  */

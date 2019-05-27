@@ -10,6 +10,7 @@ use SilverStripe\Forms\CompositeField;
 use SilverStripe\Security\Member;
 use Sunnysideup\DMS\DMS;
 use SilverStripe\Dev\SapphireTest;
+
 class DMSDocumentTest extends SapphireTest
 {
     protected static $fixture_file = 'dmstest.yml';

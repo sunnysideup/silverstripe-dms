@@ -1,5 +1,5 @@
 window.tmpl.cache['ss-dmsuploadfield-downloadtemplate'] = tmpl(
-  '{% for (var i=0, files=o.files, l=files.length, file=files[0]; i<l; file=files[++i]) { %}' +
+    '{% for (var i=0, files=o.files, l=files.length, file=files[0]; i<l; file=files[++i]) { %}' +
     '<li class="ss-uploadfield-item template-download{% if (file.error) { %} ui-state-error{% } %}" data-fileid="{%=file.id%}">' +
       '<div class="ss-uploadfield-item-preview preview"><span>' +
         '<img src="{%=file.thumbnail_url%}" alt="" />' +
@@ -23,5 +23,5 @@ window.tmpl.cache['ss-dmsuploadfield-downloadtemplate'] = tmpl(
         '{% } %}' +
       '</div>' +
     '</li>' +
-  '{% } %}'
+    '{% } %}'
 );

@@ -45,14 +45,14 @@ class DocumentHTMLEditorFieldToolbar extends Extension
 
         $fieldList->push(HiddenField::create('DMSShortcodeHandlerKey', false, DMS::inst()->getShortcodeHandlerKey()));
 
-        //		Requirements::javascript(SAPPHIRE_DIR . "/thirdparty/behaviour/behaviour.js");
-//		Requirements::javascript(SAPPHIRE_DIR . "/javascript/tiny_mce_improvements.js");
+        //      Requirements::javascript(SAPPHIRE_DIR . "/thirdparty/behaviour/behaviour.js");
+//      Requirements::javascript(SAPPHIRE_DIR . "/javascript/tiny_mce_improvements.js");
 //
-//		// create additional field, rebase to 'documents' directory
-//		$documents = new TreeDropdownField('document', 'Document', 'File', 'ID', 'DocumentDropdownTitle', true);
-//		$documents->setSearchFunction(array($this, 'documentSearchCallback'));
-//		$baseFolder = Folder::find_or_make(Document::$directory);
-//		$documents->setTreeBaseID($baseFolder->ID);
+//      // create additional field, rebase to 'documents' directory
+//      $documents = new TreeDropdownField('document', 'Document', 'File', 'ID', 'DocumentDropdownTitle', true);
+//      $documents->setSearchFunction(array($this, 'documentSearchCallback'));
+//      $baseFolder = Folder::find_or_make(Document::$directory);
+//      $documents->setTreeBaseID($baseFolder->ID);
 
 
         //return $form;

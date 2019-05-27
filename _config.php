@@ -14,7 +14,7 @@ use SilverStripe\Assets\Filesystem;
 $config = Config::inst();
 
 
-define('DMS_DIR', dirname( __FILE__ ) );
+define('DMS_DIR', dirname(__FILE__));
 
 
 // Ensure compatibility with PHP 7.2 ("object" is a reserved word),

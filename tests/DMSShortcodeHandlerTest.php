@@ -8,6 +8,7 @@ use Sunnysideup\DMS\Model\DMSDocument;
 use Sunnysideup\DMS\DMSShortcodeHandler;
 use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\Dev\SapphireTest;
+
 /**
  * Tests DMS shortcode linking functionality.
  *

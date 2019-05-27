@@ -6,6 +6,7 @@ use Sunnysideup\DMS\Model\DMSDocument;
 use SilverStripe\CMS\Model\SiteTree;
 use Sunnysideup\DMS\Tools\ShortCodeRelationFinder;
 use SilverStripe\Dev\SapphireTest;
+
 class ShortCodeRelationFinderTest extends SapphireTest
 {
     protected static $fixture_file = 'dmstest.yml';

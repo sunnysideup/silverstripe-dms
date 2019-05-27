@@ -27,7 +27,4 @@ interface DMSDocumentInterface
      * @return DMSDocumentInstance Document object that we replaced the file in
      */
     public function replaceDocument($file);
-
-
-
 }

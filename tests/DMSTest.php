@@ -7,6 +7,7 @@ use Sunnysideup\DMS\Model\DMSDocument;
 use Sunnysideup\DMS\Model\DMSDocumentSet;
 use SilverStripe\Assets\Filesystem;
 use SilverStripe\Dev\FunctionalTest;
+
 class DMSTest extends FunctionalTest
 {
     protected static $fixture_file = 'dmstest.yml';
@@ -98,14 +99,14 @@ class DMSTest extends FunctionalTest
             $folderName = $documents[$i]->Folder;
             $this->assertTrue(
 
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: upgrade to SS4
-  * OLD: ->getFullPath() (case sensitive)
-  * NEW: ->getFilename() (COMPLEX)
-  * EXP: You may need to add ASSETS_PATH."/" in front of this ...
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
+                /**
+                * ### @@@@ START REPLACEMENT @@@@ ###
+                * WHY: upgrade to SS4
+                * OLD: ->getFullPath() (case sensitive)
+                * NEW: ->getFilename() (COMPLEX)
+                * EXP: You may need to add ASSETS_PATH."/" in front of this ...
+                * ### @@@@ STOP REPLACEMENT @@@@ ###
+                */
                 strpos($documents[$i]->getFilename(), DIRECTORY_SEPARATOR . $folderName . DIRECTORY_SEPARATOR) !== false,
                 "Correct folder name for the documents. Document path contains reference to folder name '$folderName'"
             );

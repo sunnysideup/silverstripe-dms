@@ -41,8 +41,8 @@ class DMSDocumentController extends Controller
     public function index(HTTPRequest $request)
     {
 
-        if($this->request->getVar('test')) {
-            if(Permission::check('ADMIN')) {
+        if ($this->request->getVar('test')) {
+            if (Permission::check('ADMIN')) {
                 self::$testMode = true;
             }
         }
@@ -52,7 +52,6 @@ class DMSDocumentController extends Controller
             $canView = $doc->canView();
 
             if ($canView) {
-
                 $baseDir = Director::baseFolder();
                 $baseDirWithPublic = $baseDir . '/public/';
                 $path = $baseDirWithPublic . $doc->getURL();
@@ -120,7 +119,7 @@ class DMSDocumentController extends Controller
 
         $isLegacyLink = true;
         //new scenario with version and id
-        if($versionID === 'latest') {
+        if ($versionID === 'latest') {
             $versionID = 0;
             $isLegacyLink = false;
         }
@@ -139,18 +138,18 @@ class DMSDocumentController extends Controller
 
         if ($versionID || $oldCaseVersioning) {
             //todo: UPGRADE: getting versionID
-            if($oldCaseVersioning) {
+            if ($oldCaseVersioning) {
                 //use $id to find version
             } else {
                 //new school approach
                 //use $id and $versionID to find version.
             }
             $this->extend('updateVersionFromID', $doc, $request);
-        } elseif($id && $isLegacyLink) {
+        } elseif ($id && $isLegacyLink) {
             //backwards compatibility - fall back to OriginalDMSDocumentIDFile
             $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $id])->first();
             $this->extend('updateDocumentFromID', $doc, $request);
-        } elseif($id) {
+        } elseif ($id) {
             //new school approach
             $doc = DataObject::get_by_id(DMSDocument::class, $id);
             $this->extend('updateFileFromID', $doc, $request);
@@ -201,6 +200,4 @@ class DMSDocumentController extends Controller
         readfile($path);
         exit;
     }
-
-
 }

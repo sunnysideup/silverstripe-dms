@@ -4,6 +4,7 @@ use Sunnysideup\DMS\Model\DMSDocument_versions;
 use SilverStripe\Core\Config\Config;
 use Sunnysideup\DMS\DMS;
 use SilverStripe\Dev\SapphireTest;
+
 class DMSVersioningTest extends SapphireTest
 {
     protected $usesDatabase = true;
