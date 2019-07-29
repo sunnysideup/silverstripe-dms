@@ -752,6 +752,17 @@ class DMSDocument extends File implements DMSDocumentInterface
         }
     }
 
+    /**
+     * see: https://github.com/silverstripe/silverstripe-framework/issues/9129
+     * DataObject delete permissions
+     * @param Member $member
+     * @return boolean
+     */
+    public function canDelete($member = null)
+    {
+        return $this->canEdit($member);
+    }
+
     public function CMSEditLink()
     {
         $editor = Injector::inst()->get(DMSDocumentAdmin::class);
