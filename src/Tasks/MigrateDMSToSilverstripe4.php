@@ -42,29 +42,31 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
 
     public static function flush()
     {
-        $oldFolder = ASSETS_PATH . '/_dmsassets';
-        $newFolder = ASSETS_PATH . '/dmsassets';
-        if (file_exists($oldFolder) && ! file_exists($newFolder)) {
-            rename($oldFolder, $newFolder);
-        } elseif (file_exists($oldFolder) && file_exists($newFolder)) {
-            user_error($oldFolder.' AND '.$newFolder.' exist! Please review ...', E_USER_NOTICE);
-        }
-
-        $obj = Injector::inst()->get('Sunnysideup\\MigrateData\\Tasks\\MigrateDataTask');
-
-        if ($obj->tableExists('DMSDocument_versions')) {
-            if ($obj->fieldExists('DMSDocument_versions', 'Created') &&
-                $obj->fieldExists('DMSDocument_versions', 'LastEdited')
-            ) {
-                $obj->makeTableObsolete('DMSDocument_versions');
+        if(! empty($_GET['rundmsmigration'])) {
+            $oldFolder = ASSETS_PATH . '/_dmsassets';
+            $newFolder = ASSETS_PATH . '/dmsassets';
+            if (file_exists($oldFolder) && ! file_exists($newFolder)) {
+                rename($oldFolder, $newFolder);
+            } elseif (file_exists($oldFolder) && file_exists($newFolder)) {
+                user_error($oldFolder.' AND '.$newFolder.' exist! Please review ...', E_USER_NOTICE);
             }
-        }
 
-        if ($obj->tableExists('DMSDocument')) {
-            if ($obj->fieldExists('DMSDocument', 'Created') &&
-                $obj->fieldExists('DMSDocument', 'LastEdited')
-            ) {
-                $obj->makeTableObsolete('DMSDocument');
+            $obj = Injector::inst()->get('Sunnysideup\\MigrateData\\Tasks\\MigrateDataTask');
+
+            if ($obj->tableExists('DMSDocument_versions')) {
+                if ($obj->fieldExists('DMSDocument_versions', 'Created') &&
+                    $obj->fieldExists('DMSDocument_versions', 'LastEdited')
+                ) {
+                    $obj->makeTableObsolete('DMSDocument_versions');
+                }
+            }
+
+            if ($obj->tableExists('DMSDocument')) {
+                if ($obj->fieldExists('DMSDocument', 'Created') &&
+                    $obj->fieldExists('DMSDocument', 'LastEdited')
+                ) {
+                    $obj->makeTableObsolete('DMSDocument');
+                }
             }
         }
     }
