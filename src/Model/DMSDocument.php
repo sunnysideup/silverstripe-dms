@@ -556,7 +556,6 @@ class DMSDocument extends File implements DMSDocumentInterface
 
     /**
      * Get a list of related pages for this document by going through the associated document sets
-     *
      * @return ArrayList
      */
     public function getRelatedPages()
@@ -564,8 +563,8 @@ class DMSDocument extends File implements DMSDocumentInterface
         $pages = ArrayList::create();
 
         foreach ($this->Sets() as $documentSet) {
-            /** @var DocumentSet $documentSet */
-            $pages->add($documentSet->Page());
+            $page = $documentSet->Page();
+            $pages->add($page);
         }
         $pages->removeDuplicates();
 
