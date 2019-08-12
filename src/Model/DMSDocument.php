@@ -113,13 +113,21 @@ class DMSDocument extends File implements DMSDocumentInterface
         'Sets' => DMSDocumentSet::class
     ];
 
+    private static $searchable_fields = [
+        'Name' => 'PartialMatchFilter',
+        'Title' => 'PartialMatchFilter',
+        'CreatedBy.Surname' => 'PartialMatchFilter',
+        'LastEditedBy.Surname' => 'PartialMatchFilter',
+        'ShowInSearch' => 'ExactMatchFilter',
+    ];
+
     private static $summary_fields = [
         'Name' => 'Filename',
         'Title' => 'Title',
         'CreatedBy.Title' => 'Creator',
         'LastEditedBy.Title' => 'Last Editor',
         'Version' => 'Version',
-        'getRelatedPages.count' => 'Page Use'
+        'getRelatedPages.count' => 'Page Use',
     ];
 
     private static $do_not_copy = [
