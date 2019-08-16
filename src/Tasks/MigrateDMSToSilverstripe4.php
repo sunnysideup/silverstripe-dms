@@ -194,13 +194,6 @@ class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
                         $newFile->ParentID = $myFolder->ID;
                         $id = $newFile->write();
 
-
-                        //remove duplicate file and folder from the root of the assets dir
-                        $oldLocalDir = ASSETS_PATH . '/' . substr($newFile->Hash, 0, 10);
-                        $oldLocalFile = $oldLocalDir . '/' . $row['Filename'];
-                        unlink($oldLocalFile);
-                        rmdir($oldLocalDir);
-
                         $newFile->doPublish();
                         //run test 1
                         $testFilter1 = [
