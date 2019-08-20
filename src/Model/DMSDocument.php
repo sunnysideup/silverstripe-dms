@@ -83,6 +83,8 @@ use SilverStripe\Core\Injector\Injector;
  */
 class DMSDocument extends File implements DMSDocumentInterface
 {
+
+
     private static $singular_name = 'Document';
 
     private static $plural_name = 'Documents';
@@ -128,6 +130,10 @@ class DMSDocument extends File implements DMSDocumentInterface
         'LastEditedBy.Title' => 'Last Editor',
         'Version' => 'Version',
         'getRelatedPages.count' => 'Page Use',
+    ];
+
+    private static $casting = [
+        'IdAndTitle' => 'Varchar'
     ];
 
     private static $do_not_copy = [
@@ -466,6 +472,10 @@ class DMSDocument extends File implements DMSDocumentInterface
     }
 
 
+    public function getIdAndTitle() : string
+    {
+        return $this->ID . ' - ' . $this->Title;
+    }
 
     /**
      * @return FieldList
