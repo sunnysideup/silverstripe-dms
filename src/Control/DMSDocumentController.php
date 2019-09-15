@@ -48,7 +48,7 @@ class DMSDocumentController extends Controller
         }
         $doc = $this->getDocumentFromID($request);
 
-        if (!empty($doc)) {
+        if (! empty($doc)) {
             $canView = $doc->canView();
 
             if ($canView) {
@@ -115,13 +115,14 @@ class DMSDocumentController extends Controller
         $doc = null;
 
         $id = Convert::raw2sql($request->param('ID'));
-        $versionID = intval(Convert::raw2sql($request->param('OtherID')));
-
+        $versionID = Convert::raw2sql($request->param('VersionID'));
         $isLegacyLink = true;
         //new scenario with version and id
         if ($versionID === 'latest') {
             $versionID = 0;
             $isLegacyLink = false;
+        } else {
+            $versionID = intval($versionID);
         }
 
         $oldCaseVersioning = false;
@@ -147,12 +148,15 @@ class DMSDocumentController extends Controller
             $this->extend('updateVersionFromID', $doc, $request);
         } elseif ($id && $isLegacyLink) {
             //backwards compatibility - fall back to OriginalDMSDocumentIDFile
-            $doc = DMSDocument::get()->filter(['OriginalDMSDocumentIDFile' => $id])->first();
+            $doc = DMSDocument::get()
+                ->filter(['OriginalDMSDocumentIDFile' => intval($id)])
+                ->first();
+            $this->extend('updateDocumentFromIDLegacyLink', $doc, $request);
             $this->extend('updateDocumentFromID', $doc, $request);
         } elseif ($id) {
             //new school approach
-            $doc = DataObject::get_by_id(DMSDocument::class, $id);
-            $this->extend('updateFileFromID', $doc, $request);
+            $doc = DMSDocument::get()->byID(intval($id));
+            $this->extend('updateDocumentFromID', $doc, $request);
         } else {
             //nothing!
         }
