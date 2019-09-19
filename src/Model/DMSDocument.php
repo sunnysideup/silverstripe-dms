@@ -210,7 +210,7 @@ class DMSDocument extends File implements DMSDocumentInterface
                 'LinkToEdit',
                 '<h2 style="text-align: center; padding-bottom: 40px;">» You can edit this DMS Document in the
                 <a href="'.$this->CMSEditLink().'" target="dms">DMS Document Editor</a>
-                </h2>'
+                «</h2>'
             );
         }
         if (!$siteConfig->DMSFolderID) {
