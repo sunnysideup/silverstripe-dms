@@ -761,6 +761,10 @@ class DMSDocument extends File implements DMSDocumentInterface
         return nl2br($this->getField('Description'));
     }
 
+    public function canCreate($member = null, $context = [])
+    {
+        return canEdit($member);
+    }
 
     /**
      * DataObject edit permissions
