@@ -206,12 +206,19 @@ class DMSDocument extends File implements DMSDocumentInterface
         $fieldsForRelated = [];
         $fieldsForPermissions = [];
         if (! (Controller::curr() instanceof DMSDocumentAdmin)) {
-            $fieldsForMain[] = LiteralField::create(
-                'LinkToEdit',
-                '<h2 style="text-align: center; padding-bottom: 40px;">» You can edit this DMS Document in the
-                <a href="'.$this->CMSEditLink().'" target="dms">DMS Document Editor</a>
-                «</h2>'
-            );
+            if($this->exists()) {
+                $fieldsForMain[] = LiteralField::create(
+                    'LinkToEdit',
+                    '<h2>You can edit this DMS Document in the
+                    <a href="'.$this->CMSEditLink().'" target="dms">DMS Document Editor</a>'
+                );
+            } else {
+                $fieldsForMain[] = LiteralField::create(
+                    'LinkToEdit',
+                    '<h2>You can add a new document in the
+                    <a href="'.$this->CMSAddLink().'" target="dms">DMS Document Editor</a>'
+                );
+            }
         }
         if (!$siteConfig->DMSFolderID) {
             $fieldsForMain[] = (
@@ -796,5 +803,12 @@ class DMSDocument extends File implements DMSDocumentInterface
         $editor = Injector::inst()->get(DMSDocumentAdmin::class);
         $cleanClass = str_replace('\\', '-', self::class);
         return $editor->Link('/'.$cleanClass.'/EditForm/field/'.$cleanClass.'/item/'.$this->ID.'/edit');
+    }
+
+    public function CMSAddLink()
+    {
+        $editor = Injector::inst()->get(DMSDocumentAdmin::class);
+        $cleanClass = str_replace('\\', '-', self::class);
+        return $editor->Link('/'.$cleanClass.'/EditForm/field/'.$cleanClass.'/item/new');
     }
 }
