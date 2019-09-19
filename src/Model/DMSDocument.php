@@ -209,14 +209,18 @@ class DMSDocument extends File implements DMSDocumentInterface
             if($this->exists()) {
                 $fieldsForMain[] = LiteralField::create(
                     'LinkToEdit',
-                    '<h2 style="text-align: center; padding-bottom: 30px;">You can edit this DMS Document in the
-                    <a href="'.$this->CMSEditLink().'" target="dms">DMS Document Editor</a>'
+                    '<h2 style="text-align: center; padding-bottom: 30px;">«
+                        You can edit this DMS Document in the
+                        <a href="'.$this->CMSEditLink().'" target="dms">DMS Document Editor</a>
+                    »</h2>'
                 );
             } else {
                 $fieldsForMain[] = LiteralField::create(
                     'LinkToEdit',
-                    '<h2 style="text-align: center; padding-bottom: 30px;">You can add a new document in the
-                    <a href="'.$this->CMSAddLink().'" target="dms">DMS Document Editor</a>'
+                    '<h2 style="text-align: center; padding-bottom: 30px;">«
+                        You can add a new DMS Document in the
+                        <a href="'.$this->CMSAddLink().'" target="dms">DMS Document Editor</a>
+                    »</h2>'
                 );
             }
         }
