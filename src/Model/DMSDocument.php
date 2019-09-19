@@ -205,7 +205,7 @@ class DMSDocument extends File implements DMSDocumentInterface
         $fieldsForRelatedDocs = [];
         $fieldsForRelated = [];
         $fieldsForPermissions = [];
-        if (Controller::curr() instanceof DMSDocumentAdmin) {
+        if (! (Controller::curr() instanceof DMSDocumentAdmin)) {
             $fieldsForMain[] = LiteralField::create(
                 'LinkToEdit',
                 '<h2><a href="'.$this->CMSEditLink().'" target="dms">Edit This DMS Document</a>'
