@@ -763,7 +763,7 @@ class DMSDocument extends File implements DMSDocumentInterface
 
     public function canCreate($member = null, $context = [])
     {
-        return canEdit($member);
+        return $this->canEdit($member);
     }
 
     /**
