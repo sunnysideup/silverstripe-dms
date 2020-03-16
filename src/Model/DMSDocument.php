@@ -205,13 +205,13 @@ class DMSDocument extends File implements DMSDocumentInterface
         $fieldsForRelatedDocs = [];
         $fieldsForRelated = [];
         $fieldsForPermissions = [];
-        if (!(Controller::curr() instanceof DMSDocumentAdmin)) {
-            if ($this->exists()) {
+        if (! (Controller::curr() instanceof DMSDocumentAdmin)) {
+            if($this->exists()) {
                 $fieldsForMain[] = LiteralField::create(
                     'LinkToEdit',
                     '<h2 style="text-align: center; padding-bottom: 30px;">«
                         You can edit this DMS Document in the
-                        <a href="' . $this->CMSEditLink() . '" target="dms">DMS Document Editor</a>
+                        <a href="'.$this->CMSEditLink().'" target="dms">DMS Document Editor</a>
                     »</h2>'
                 );
             } else {
@@ -219,16 +219,18 @@ class DMSDocument extends File implements DMSDocumentInterface
                     'LinkToEdit',
                     '<h2 style="text-align: center; padding-bottom: 30px;">«
                         You can add a new DMS Document in the
-                        <a href="' . $this->CMSAddLink() . '" target="dms">DMS Document Editor</a>
+                        <a href="'.$this->CMSAddLink().'" target="dms">DMS Document Editor</a>
                     »</h2>'
                 );
             }
         }
         if (!$siteConfig->DMSFolderID) {
-            $fieldsForMain[] = (LiteralField::create(
+            $fieldsForMain[] = (
+                LiteralField::create(
                     'DMSFolderMessage',
                     '<h2>You need to <a href="/admin/settings/" target="_blank">set</a> the folder for the DMS documents before you can create a DMS document.'
-                ));
+                )
+            );
         } else {
             if (!$this->ID) {
                 $uploadField = new UploadField('TempFile', 'File');
@@ -488,7 +490,7 @@ class DMSDocument extends File implements DMSDocumentInterface
     }
 
 
-    public function getIdAndTitle(): string
+    public function getIdAndTitle() : string
     {
         return $this->ID . ' - ' . $this->Title;
     }
@@ -519,7 +521,7 @@ class DMSDocument extends File implements DMSDocumentInterface
                 )->setName("FilePreviewImage")->addExtraClass('cms-file-info-preview'),
                 CompositeField::create(
                     CompositeField::create(
-                        new ReadonlyField("ID", "ID number" . ':', $this->ID),
+                        new ReadonlyField("ID", "ID number". ':', $this->ID),
                         new ReadonlyField(
                             "FileType",
                             _t('AssetTableField.TYPE', 'File type') . ':',
@@ -530,11 +532,11 @@ class DMSDocument extends File implements DMSDocumentInterface
                             '<div class="form-group field readonly">
                                 <label class="form__field-label">URL:</label>
                                 <div class="form__field-holder">
-                                    <a href="' . $this->getLink() . '" target="_blank" class="file-url">' . $this->getLink() . '</a>
+                                    <a href="'.$this->getLink().'" target="_blank" class="file-url">'.$this->getLink().'</a>
                                 </div>
                             </div>'
                         ),
-                        ReadonlyField::create("FilenameWithoutIDField", "Filename" . ':', $this->fileName),
+                        ReadonlyField::create("FilenameWithoutIDField", "Filename". ':', $this->fileName),
                         new DateField_Disabled(
                             "Created",
                             _t('AssetTableField.CREATED', 'First uploaded') . ':',
@@ -545,7 +547,7 @@ class DMSDocument extends File implements DMSDocumentInterface
                             _t('AssetTableField.LASTEDIT', 'Last changed') . ':',
                             $this->LastEdited
                         ),
-                        new ReadonlyField("PublishedOn", "Published on" . ':', $publishedOnValue)
+                        new ReadonlyField("PublishedOn", "Published on". ':', $publishedOnValue)
                     )->setName('FilePreviewDataFields')
                 )->setName("FilePreviewData")->addExtraClass('cms-file-info-data')
             )->setName("FilePreview")->addExtraClass('cms-file-info')
@@ -804,13 +806,13 @@ class DMSDocument extends File implements DMSDocumentInterface
     {
         $editor = Injector::inst()->get(DMSDocumentAdmin::class);
         $cleanClass = str_replace('\\', '-', self::class);
-        return $editor->Link('/' . $cleanClass . '/EditForm/field/' . $cleanClass . '/item/' . $this->ID . '/edit');
+        return $editor->Link('/'.$cleanClass.'/EditForm/field/'.$cleanClass.'/item/'.$this->ID.'/edit');
     }
 
     public function CMSAddLink()
     {
         $editor = Injector::inst()->get(DMSDocumentAdmin::class);
         $cleanClass = str_replace('\\', '-', self::class);
-        return $editor->Link('/' . $cleanClass . '/EditForm/field/' . $cleanClass . '/item/new');
+        return $editor->Link('/'.$cleanClass.'/EditForm/field/'.$cleanClass.'/item/new');
     }
 }
