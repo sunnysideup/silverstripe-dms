@@ -1,5 +1,5 @@
 {
-    "name": "sunnysideup/dms",
+    "name": "heyday/dms",
     "description": "Adds a Document Management System to SilverStripe ",
     "type": "silverstripe-vendormodule",
     "keywords": [
