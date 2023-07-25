@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "symbiote/silverstripe-gridfieldextensions": "^3.2.0",
+        "symbiote/silverstripe-gridfieldextensions": "*",
         "silverstripe/taxonomy": "^2.0"
     },
     "require-dev": {
