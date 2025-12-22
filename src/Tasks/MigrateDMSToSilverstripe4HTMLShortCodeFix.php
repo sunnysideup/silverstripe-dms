@@ -22,6 +22,11 @@ use Sunnysideup\DMS\Model\DMSDocument;
 use Sunnysideup\DMS\Model\DMSDocumentSet;
 use Sunnysideup\MigrateData\Tasks\MigrateDataTask;
 
+
+if (!class_exists(MigrateDataTask::class)) {
+    return;
+}
+
 class MigrateDMSToSilverstripe4HTMLShortCodeFix extends MigrateDataTask
 {
 

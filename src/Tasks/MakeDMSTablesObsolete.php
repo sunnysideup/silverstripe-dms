@@ -19,6 +19,11 @@ use SilverStripe\Versioned\Versioned;
 use Sunnysideup\DMS\Model\DMSDocument;
 use Sunnysideup\MigrateData\Tasks\MigrateDataTask;
 
+
+if (!class_exists(MigrateDataTask::class)) {
+    return;
+}
+
 class MakeDMSTablesObsolete extends MigrateDataTask
 {
 
