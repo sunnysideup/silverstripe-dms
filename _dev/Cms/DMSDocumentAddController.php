@@ -20,6 +20,7 @@ use Sunnysideup\DMS\Model\DMSDocument;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Assets\File;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use SilverStripe\Security\Permission;
 use SilverStripe\Admin\LeftAndMain;
 
@@ -374,7 +375,7 @@ class DMSDocumentAddController extends LeftAndMain
     public function canView($member = null, $context = [])
     {
         if (!$member || !(is_a($member, Member::class)) || is_numeric($member)) {
-            $member = Member::currentUser();
+            $member = Security::getCurrentUser();
         }
 
         if ($member &&
