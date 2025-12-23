@@ -29,6 +29,7 @@ use Sunnysideup\DMS\DMS;
 use SilverStripe\Forms\HiddenField;
 use SilverStripe\View\Requirements;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use SilverStripe\Forms\ListboxField;
 use Sunnysideup\DMS\Forms\DMSJsonField;
 use SilverStripe\Forms\DropdownField;
@@ -178,7 +179,7 @@ class DMSDocumentSet extends DataObject
     public function getGlobalPermission(Member $member = null)
     {
         if (!$member || !(is_a($member, Member::class)) || is_numeric($member)) {
-            $member = Member::currentUser();
+            $member = Security::getCurrentUser();
         }
 
         $result = (

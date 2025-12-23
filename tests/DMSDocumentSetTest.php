@@ -16,6 +16,7 @@ use SilverStripe\Forms\HiddenField;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\CMS\Controllers\CMSPageEditController;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use SilverStripe\Dev\SapphireTest;
 
 class DMSDocumentSetTest extends SapphireTest
@@ -268,7 +269,7 @@ class DMSDocumentSetTest extends SapphireTest
      */
     public function testPermissions()
     {
-        if ($member = Member::currentUser()) {
+        if ($member = Security::getCurrentUser()) {
             $member->logout();
         }
 

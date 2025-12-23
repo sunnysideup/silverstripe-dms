@@ -29,7 +29,12 @@ use Sunnysideup\DMS\Model\DMSDocument;
 use Sunnysideup\DMS\Model\DMSDocumentSet;
 use Sunnysideup\MigrateData\Tasks\MigrateDataTask;
 
-class MigrateDMSToSilverstripe4 extends MigrateDataTask implements Flushable
+
+if (!class_exists(MigrateDataTask::class)) {
+    return;
+}
+
+class MigrateDMSToSilverstripe4 extends MigrateDataTask
 {
 
     /**

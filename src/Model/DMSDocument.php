@@ -9,6 +9,7 @@ use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use Sunnysideup\DMS\Model\DMSDocument;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Permission;
@@ -399,7 +400,7 @@ class DMSDocument extends File implements DMSDocumentInterface
     public function onBeforeWrite()
     {
         // Set user fields
-        if ($currentUserID = Member::currentUserID()) {
+        if ($currentUserID = Security::getCurrentUser()?->ID) {
             if (!$this->CreatedByID) {
                 $this->CreatedByID = $currentUserID;
             }

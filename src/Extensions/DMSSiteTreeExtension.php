@@ -5,6 +5,7 @@ namespace Sunnysideup\DMS\Extensions;
 use Sunnysideup\DMS\Model\DMSDocumentSet;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use SilverStripe\Security\Permission;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\Forms\GridField\GridField;
@@ -33,7 +34,7 @@ class DMSSiteTreeExtension extends DataExtension
 
         // Hides the DocumentSets tab if the user has no permisions
         if (!Permission::checkMember(
-            Member::currentUser(),
+            Security::getCurrentUser(),
             array('ADMIN', 'CMS_ACCESS_DMSDocumentAdmin')
         )
         ) {
