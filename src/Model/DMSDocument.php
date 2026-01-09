@@ -785,7 +785,7 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function canEdit($member = null)
     {
-        if (Controller::curr() instanceof DMSDocumentAdmin) {
+        if (Controller::curr() instanceof DMSDocumentAdmin || Controller::curr() instanceof CMSPageEditController)
             return parent::canEdit($member);
         } else {
             return false;
