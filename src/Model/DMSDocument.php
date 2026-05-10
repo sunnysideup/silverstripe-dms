@@ -4,13 +4,15 @@ namespace Sunnysideup\DMS\Model;
 
 use Exception;
 
+use SilverStripe\Admin\LeftAndMain;
+use SilverStripe\CMS\Controllers\CMSMain;
+use SilverStripe\TagField\TagField;
 use Sunnysideup\DMS\Model\DMSDocumentSet;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
-use Sunnysideup\DMS\Model\DMSDocument;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Permission;
 use SilverStripe\ORM\DB;
@@ -206,25 +208,6 @@ class DMSDocument extends File implements DMSDocumentInterface
         $fieldsForRelatedDocs = [];
         $fieldsForRelated = [];
         $fieldsForPermissions = [];
-        if (! (Controller::curr() instanceof DMSDocumentAdmin)) {
-            if($this->exists()) {
-                $fieldsForMain[] = LiteralField::create(
-                    'LinkToEdit',
-                    '<h2 style="text-align: center; padding-bottom: 30px;">«
-                        You can edit this DMS Document in the
-                        <a href="'.$this->CMSEditLink().'" target="dms">DMS Document Editor</a>
-                    »</h2>'
-                );
-            } else {
-                $fieldsForMain[] = LiteralField::create(
-                    'LinkToEdit',
-                    '<h2 style="text-align: center; padding-bottom: 30px;">«
-                        You can add a new DMS Document in the
-                        <a href="'.$this->CMSAddLink().'" target="dms">DMS Document Editor</a>
-                    »</h2>'
-                );
-            }
-        }
         if (!$siteConfig->DMSFolderID) {
             $fieldsForMain[] = (
                 LiteralField::create(
@@ -264,6 +247,12 @@ class DMSDocument extends File implements DMSDocumentInterface
                 $coverImageField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'png', 'gif'));
                 $coverImageField->setAllowedMaxFileNumber(1);
                 $fieldsForDetails[] = $coverImageField;
+
+                $fieldsForDetails[] = TagField::create(
+                    'Sets',
+                    'Document sets',
+                    DMSDocumentSet::get()
+                );
 
                 $gridFieldConfig = GridFieldConfig::create()->addComponents(
                     new GridFieldToolbarHeader(),
@@ -487,7 +476,7 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function getExtension()
     {
-        return strtolower(pathinfo($this->Filename, PATHINFO_EXTENSION));
+        return strtolower(pathinfo($this->Filename ?? '', PATHINFO_EXTENSION));
     }
 
 
@@ -785,7 +774,7 @@ class DMSDocument extends File implements DMSDocumentInterface
      */
     public function canEdit($member = null)
     {
-        if (Controller::curr() instanceof DMSDocumentAdmin) {
+        if (Controller::curr() instanceof LeftAndMain) {
             return parent::canEdit($member);
         } else {
             return false;
